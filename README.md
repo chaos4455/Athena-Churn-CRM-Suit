@@ -57,7 +57,7 @@ Como Arquiteto, projetei o Athena sob o princípio da **Resiliência Evolutiva**
 
 ## ⚙️ O Motor ETL: Inteligência no Campo
 
-A verdadeira vantagem competitiva do Athena reside no seu [ETL Guide](./athena-crm/docs/etl-guide.md). Não se trata de mover dados, mas de **refinar minério em combustível**.
+A verdadeira vantagem competitiva do Athena reside na sua integração de input/ouput via api RESTful e sua capacidade se acoplar em pipelines de ETL: [ETL Guide](./athena-crm/docs/etl-guide.md). Não se trata de mover dados, mas de **refinar minério em combustível**.
 
 1.  **Extração Adaptativa:** Conectores customizados para ERPs comuns no setor agro.
 2.  **Transformação Preditiva:** Aplicação de pesos baseados em *Recência, Frequência e Valor (RFM)*, ajustados para a realidade de safras e períodos de entressafra.
