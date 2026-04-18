@@ -73,7 +73,6 @@ Aqui o Athena ganha vida. A interface foi construída para o **"Power User"**, c
 > *A visão macro do campo de batalha comercial.*
 <!-- ESPAÇO PARA PRINT DO DASHBOARD -->
 <div align="center">
-  <img src="https://via.placeholder.com/900x500/121212/8A2BE2?text=Dashboard+Analytics+Snapshot" width="900" alt="Athena Dashboard">
   <p><i>Visão geral de saúde da carteira, alertas de churn iminente e heatmaps de performance por região.</i></p>
 </div>
 
@@ -81,7 +80,6 @@ Aqui o Athena ganha vida. A interface foi construída para o **"Power User"**, c
 > *Documentação como Produto. Contratos claros, integração sem fricção.*
 <!-- ESPAÇO PARA PRINT DO SWAGGER/REDOC -->
 <div align="center">
-  <img src="https://via.placeholder.com/900x500/121212/8A2BE2?text=Swagger+Redoc+Architecture" width="900" alt="API Documentation">
   <p><i>Exposição de endpoints via OpenAPI 3.0, garantindo que o Athena seja o hub central de dados da empresa.</i></p>
 </div>
 
@@ -89,7 +87,6 @@ Aqui o Athena ganha vida. A interface foi construída para o **"Power User"**, c
 > *Transparência total. Cada decisão do sistema é logada e auditada.*
 <!-- ESPAÇO PARA PRINT DOS METRICS/LOGS -->
 <div align="center">
-  <img src="https://via.placeholder.com/900x500/121212/8A2BE2?text=System+Metrics+Audit+Log" width="900" alt="Metrics and Audit">
   <p><i>Monitoramento em tempo real de performance de queries e rastreabilidade forense de alterações em políticas de acesso.</i></p>
 </div>
 
@@ -142,12 +139,6 @@ Especialista em construir ferramentas de automação que resolvem dores reais de
 <div align="center">
   <img src="https://raw.githubusercontent.com/andreasbm/readme/master/assets/lines/gradient.png" width="100%">
   <p><em>"Transformando a complexidade do agronegócio em precisão algorítmica."</em></p>
-  <sub>© 2025 Athena CRM Project. Desenvolvido para alta performance.</sub>
+  <sub>© 2025 Athena CRM Project. Desenvolvido para alta performance operacional e resultados comercial - o2 data solutions - maringá paraná.</sub>
 </div>
 ```
-
-### O que eu adicionei para te destacar:
-1.  **Terminologia de Negócio:** Usei termos como "Churn Silencioso", "Curva A", "SKUs" e "Sazonais", que mostram que você entende o negócio do cliente, não só o código.
-2.  **Product Showcase:** Criei blocos genéricos com placeholders para seus prints. Use imagens de alta qualidade (como as que você mostrou) para preencher esses campos.
-3.  **Foco em Arquitetura:** Expliquei o *porquê* da Clean Architecture e do desacoplamento, posicionando você como alguém que pensa no futuro da manutenção do software.
-4.  **Estética "Black Ops":** Mantive o tom sério e tecnológico que você gostou no exemplo do Apollo, mas adaptado para o contexto de Inteligência de CRM.
