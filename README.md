@@ -1,6 +1,5 @@
 
 <div align="center">
-  <img src="https://raw.githubusercontent.com/andreasbm/readme/master/assets/lines/gradient.png" width="100%">
   
   <h1> 🌌 Project Nexus </h1>
   
