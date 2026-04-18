@@ -2,11 +2,7 @@ Este README foi expandido para se tornar um **Manifesto de Engenharia e Produto*
 
 ---
 
-# 🌌 Athena Churn CRM: The Enterprise Intelligence Suite
-### **Sovereign Data Orchestration & Predictive Retention Engine**
-
-<div align="center">
-  <img src="https://raw.githubusercontent.com/andreasbm/readme/master/assets/lines/gradient.png" width="100%">
+# 🌌 Athena Churn CRM
 
   <div>
     <img src="https://img.shields.io/badge/ARCHITECT-ELIAS_ANDRADE-8A2BE2?style=for-the-badge&logo=opsgenie&logoColor=white" alt="Architect">
