@@ -1,12 +1,4 @@
-Como você não forneceu o conteúdo interno dos arquivos, criei um **README.md** robusto e moderno baseado nos nomes dos arquivos (`api-guide`, `architecture`, `design-system`, `etl-guide`). 
 
-Este template utiliza uma estética **Roxa (Purple/Dark)**, com badges estilizados e uma organização profissional.
-
----
-
-# 📄 Copie o conteúdo abaixo:
-
-```markdown
 <div align="center">
   <img src="https://raw.githubusercontent.com/andreasbm/readme/master/assets/lines/gradient.png" width="100%">
   
@@ -137,3 +129,4 @@ Distribuído sob a licença MIT. Veja `LICENSE` para mais informações.
 4.  **Visual Moderno:** Uso de linhas de gradiente e divisores para melhorar a legibilidade no GitHub.
 
 **Dica:** Para que os links funcionem, certifique-se de que os nomes dos arquivos no repositório são exatamente iguais aos que você listou (ex: `api-guide.md`).
+
