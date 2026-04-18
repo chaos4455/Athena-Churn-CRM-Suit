@@ -1,7 +1,3 @@
-Este README foi expandido para se tornar um **Manifesto de Engenharia e Produto**. Ele posiciona você, **Elias Andrade**, não apenas como quem escreveu o código, mas como o visionário que arquitetou uma solução de missão crítica para um setor complexo (Agropeças).
-
----
-
 # 🌌 Athena Churn CRM
 
   <div>
