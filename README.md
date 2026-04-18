@@ -1,7 +1,7 @@
 
 <div align="center">
   
-  <h1> 🌌 Project Nexus </h1>
+  <h1> 🌌 Athena Churn CRM </h1>
   
   <p>Uma plataforma integrada de alta performance unindo Processamento de Dados (ETL), APIs Escaláveis e Design Consistente.</p>
 
