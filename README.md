@@ -9,7 +9,6 @@
   <p align="center">
     <img src="https://img.shields.io/badge/FastAPI-009688?style=for-the-badge&logo=fastapi&logoColor=white" />
     <img src="https://img.shields.io/badge/Python_3.12-3776AB?style=for-the-badge&logo=python&logoColor=white" />
-    <img src="https://img.shields.io/badge/PostgreSQL-316192?style=for-the-badge&logo=postgresql&logoColor=white" />
     <img src="https://img.shields.io/badge/Docker_Pro-2496ED?style=for-the-badge&logo=docker&logoColor=white" />
     <img src="https://img.shields.io/badge/Clean_Architecture-black?style=for-the-badge&logo=architectural-digest&logoColor=white" />
   </p>
