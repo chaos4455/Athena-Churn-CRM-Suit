@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script>(function(){try{var t=localStorage.getItem('athena-theme');if(t==='dark')document.documentElement.classList.add('dark');}catch(e){}})();</script>
+  <title>Performance — Athena CRM</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/@phosphor-icons/web"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <link rel="stylesheet" href="../assets/css/variables.css">
+  <link rel="stylesheet" href="../assets/css/reset.css">
+  <link rel="stylesheet" href="../assets/css/layout.css">
+  <link rel="stylesheet" href="../assets/css/components.css">
+  <link rel="stylesheet" href="../assets/css/animations.css">
+  <link rel="stylesheet" href="../assets/css/dark-theme.css">
+  <link rel="stylesheet" href="../assets/css/responsive.css">
+  <style>
+    /* ── Tabs ── */
+    .tab-bar {
+      display: flex; gap: 4px;
+      background: var(--bg-input);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 4px;
+      width: fit-content;
+    }
+    .tab-btn {
+      padding: 7px 16px; border-radius: var(--radius-sm);
+      font-size: .82rem; font-weight: 600;
+      color: var(--text-secondary);
+      transition: var(--t-fast); cursor: pointer;
+      display: flex; align-items: center; gap: 6px;
+    }
+    .tab-btn.active {
+      background: var(--brand-gradient);
+      color: #fff;
+      box-shadow: 0 2px 8px rgba(124,58,237,.3);
+    }
+    .tab-btn:not(.active):hover { background: var(--bg-hover); color: var(--text-primary); }
+
+    /* ── Scope toggle ── */
+    .scope-toggle {
+      display: flex; gap: 4px;
+      background: var(--bg-input);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 3px;
+    }
+    .scope-btn {
+      padding: 5px 12px; border-radius: var(--radius-xs);
+      font-size: .78rem; font-weight: 600;
+      color: var(--text-secondary); cursor: pointer;
+      transition: var(--t-fast);
+    }
+    .scope-btn.active { background: var(--bg-card); color: var(--brand-primary); box-shadow: var(--shadow-xs); }
+
+    /* ── Mini KPI row ── */
+    .mini-kpi-row {
+      display: flex; gap: .75rem; flex-wrap: wrap; margin-bottom: 1.5rem;
+    }
+    .mini-kpi {
+      flex: 1; min-width: 110px;
+      background: var(--bg-card); border: 1px solid var(--border);
+      border-radius: var(--radius-md); padding: .875rem 1rem;
+      text-align: center;
+    }
+    .mini-kpi-label { font-size: .68rem; font-weight: 700; text-transform: uppercase; letter-spacing: .5px; color: var(--text-muted); margin-bottom: .25rem; }
+    .mini-kpi-value { font-size: 1.4rem; font-weight: 800; color: var(--text-primary); }
+
+    /* ── Sort buttons ── */
+    .sort-btn {
+      display: inline-flex; align-items: center; gap: 4px;
+      padding: 4px 10px; border-radius: var(--radius-sm);
+      font-size: .72rem; font-weight: 600;
+      background: var(--bg-input); border: 1px solid var(--border);
+      color: var(--text-secondary); cursor: pointer;
+      transition: var(--t-fast);
+    }
+    .sort-btn:hover { border-color: var(--brand-primary); color: var(--brand-primary); }
+    .sort-btn.active {
+      background: var(--brand-gradient); color: #fff;
+      border-color: transparent;
+      box-shadow: 0 2px 8px rgba(124,58,237,.25);
+    }
+    .sort-btn i { font-size: .8rem; }
+
+    /* ── Sortable column headers ── */
+    th.sortable {
+      cursor: pointer; user-select: none; white-space: nowrap;
+    }
+    th.sortable:hover { color: var(--brand-primary); }
+    th.sortable.asc  i::before { content: "\e1a0"; } /* ph-sort-ascending  */
+    th.sortable.desc i::before { content: "\e1a1"; } /* ph-sort-descending */
+    th.sortable i { font-size: .75rem; opacity: .5; margin-left: 3px; }
+    th.sortable.asc i, th.sortable.desc i { opacity: 1; color: var(--brand-primary); }
+
+    /* ── Rank badge ── */
+    .rank-badge {
+      width: 22px; height: 22px; border-radius: 50%;
+      display: inline-flex; align-items: center; justify-content: center;
+      font-size: .65rem; font-weight: 800;
+    }
+    .rank-1 { background: #fbbf24; color: #78350f; }
+    .rank-2 { background: #94a3b8; color: #1e293b; }
+    .rank-3 { background: #cd7c3a; color: #fff; }
+    .rank-n { background: var(--bg-input); color: var(--text-muted); }
+
+    /* ── Seller chip ── */
+    .seller-chip { display: flex; align-items: center; gap: 8px; }
+    .seller-av {
+      width: 28px; height: 28px; border-radius: 50%;
+      background: var(--brand-gradient);
+      display: flex; align-items: center; justify-content: center;
+      color: #fff; font-size: .65rem; font-weight: 700; flex-shrink: 0;
+    }
+    .seller-av-name { font-weight: 600; font-size: .82rem; }
+    .seller-av-sub  { font-size: .65rem; color: var(--text-muted); }
+
+    /* ── Conv bar ── */
+    .conv-bar-wrap { display: flex; align-items: center; gap: 6px; min-width: 90px; }
+    .conv-bar { flex: 1; height: 5px; background: var(--border); border-radius: var(--radius-full); overflow: hidden; }
+    .conv-bar-fill { height: 100%; border-radius: var(--radius-full); transition: width .5s ease; }
+    .conv-bar-lbl { font-size: .72rem; font-weight: 700; min-width: 36px; text-align: right; }
+
+    /* ── Action table rows ── */
+    .act-type-chip {
+      display: inline-flex; align-items: center; gap: 5px;
+      padding: 3px 9px; border-radius: var(--radius-full);
+      font-size: .72rem; font-weight: 700; white-space: nowrap;
+    }
+    .act-type-chip i { font-size: .8rem; }
+    .act-type-call     { background: var(--info-bg);    color: var(--info); }
+    .act-type-email    { background: var(--brand-light); color: var(--brand-primary); }
+    .act-type-meeting  { background: var(--success-bg);  color: var(--success); }
+    .act-type-whatsapp { background: var(--success-bg);  color: var(--success); }
+    .act-type-note     { background: var(--bg-input);    color: var(--text-muted); }
+    .act-type-proposal { background: var(--warning-bg);  color: var(--warning); }
+
+    .act-client-link {
+      display: inline-flex; align-items: center; gap: 4px;
+      font-size: .8rem; font-weight: 600; color: var(--brand-primary);
+      text-decoration: none; max-width: 160px;
+      overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    }
+    .act-client-link:hover { text-decoration: underline; }
+
+    .act-card-btn {
+      display: inline-flex; align-items: center; gap: 4px;
+      font-size: .75rem; font-weight: 600;
+      color: var(--warning); background: var(--warning-bg);
+      border: none; border-radius: var(--radius-full);
+      padding: 2px 8px; cursor: pointer; white-space: nowrap;
+      max-width: 160px; overflow: hidden; text-overflow: ellipsis;
+      transition: var(--t-fast);
+    }
+    .act-card-btn:hover { background: var(--warning); color: #fff; }
+
+    .act-result-pill {
+      display: inline-flex; align-items: center; gap: 4px;
+      font-size: .7rem; font-weight: 700;
+      padding: 3px 8px; border-radius: var(--radius-full);
+      white-space: nowrap;
+    }
+
+    .act-desc {
+      font-size: .8rem; color: var(--text-secondary);
+      max-width: 220px; overflow: hidden;
+      text-overflow: ellipsis; white-space: nowrap;
+      display: block;
+    }
+
+    /* ── View actions btn ── */
+    .view-actions-btn {
+      display: inline-flex; align-items: center; gap: 4px;
+      padding: 4px 10px; border-radius: var(--radius-sm);
+      font-size: .72rem; font-weight: 600;
+      background: var(--brand-light); color: var(--brand-primary);
+      border: 1px solid var(--brand-secondary);
+      cursor: pointer; transition: var(--t-fast); white-space: nowrap;
+    }
+    .view-actions-btn:hover { background: var(--brand-primary); color: #fff; }
+  </style>
+</head>
+<body data-page="performance">
+<div class="sidebar-overlay" id="sidebar-overlay"></div>
+<div class="app">
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-logo">
+      <div class="logo-icon"><i class="ph-fill ph-brain"></i></div>
+      <div class="logo-text">Athena CRM <span>Churn Management Suite</span></div>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="nav-section">
+        <span class="nav-label">Principal</span>
+        <ul>
+          <li class="nav-item"><a href="dashboard.html"   class="nav-link"><i class="ph ph-squares-four"></i> Dashboard</a></li>
+          <li class="nav-item"><a href="actions.html"     class="nav-link"><i class="ph ph-kanban"></i> Ações / Kanban</a></li>
+          <li class="nav-item"><a href="performance.html" class="nav-link active"><i class="ph ph-chart-bar"></i> Performance</a></li>
+          <li class="nav-item"><a href="clients.html"     class="nav-link"><i class="ph ph-users"></i> Clientes</a></li>
+        </ul>
+      </div>
+    </nav>
+    <div class="sidebar-footer"><strong>O2 Data</strong><br>&copy; <span id="footer-year"></span> Athena CRM</div>
+  </aside>
+
+  <div class="main">
+    <header class="header">
+      <button class="icon-btn" id="sidebar-toggle" style="display:none"><i class="ph ph-list"></i></button>
+      <div class="header-search-wrap">
+        <div class="header-search">
+          <i class="ph ph-magnifying-glass"></i>
+          <input type="text" id="global-search" placeholder="Buscar clientes ou cards..." autocomplete="off">
+        </div>
+        <div id="global-search-results" class="global-search-dropdown" hidden></div>
+      </div>
+      <div class="header-actions">
+        <button class="icon-btn" id="theme-btn"><i class="ph ph-moon" id="theme-icon"></i></button>
+        <button class="icon-btn"><i class="ph ph-bell"></i><span class="notif-dot"></span></button>
+        <div class="user-chip">
+          <div class="avatar">AD</div>
+          <div><div class="user-name">Admin</div><div class="user-role">Gestor</div></div>
+        </div>
+      </div>
+    </header>
+
+    <div class="content animate-fade">
+      <!-- Page header -->
+      <div class="page-header">
+        <div>
+          <h1 class="page-title">Performance</h1>
+          <p class="page-subtitle">Conversões, ações e resultados por vendedor</p>
+        </div>
+        <!-- Scope toggle -->
+        <div class="scope-toggle">
+          <button class="scope-btn active" data-scope="current">Ciclo Atual</button>
+          <button class="scope-btn" data-scope="history">Histórico</button>
+        </div>
+      </div>
+
+      <!-- Filters + Tabs row -->
+      <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.875rem;margin-bottom:1.5rem">
+        <div class="tab-bar">
+          <button class="tab-btn active" data-perf-tab="overview"><i class="ph ph-chart-bar"></i> Visão Geral</button>
+          <button class="tab-btn" data-perf-tab="actions"><i class="ph ph-lightning"></i> Ações</button>
+          <button class="tab-btn" data-perf-tab="sellers"><i class="ph ph-users-three"></i> Vendedores</button>
+        </div>
+        <div style="display:flex;gap:.5rem;flex-wrap:wrap">
+          <select class="form-control" id="perf-filter-branch" style="width:150px"></select>
+          <select class="form-control" id="perf-filter-state"  style="width:120px"></select>
+          <select class="form-control" id="perf-filter-seller" style="width:180px"></select>
+        </div>
+      </div>
+
+      <!-- ── Tab: Overview ── -->
+      <div data-perf-panel="overview">
+        <!-- Mini KPIs -->
+        <div class="mini-kpi-row">
+          <div class="mini-kpi"><div class="mini-kpi-label">Total</div><div class="mini-kpi-value" id="ov-total">—</div></div>
+          <div class="mini-kpi"><div class="mini-kpi-label">Convertido</div><div class="mini-kpi-value" style="color:var(--success)" id="ov-converted">—</div></div>
+          <div class="mini-kpi"><div class="mini-kpi-label">Declinado</div><div class="mini-kpi-value" style="color:var(--danger)" id="ov-declined">—</div></div>
+          <div class="mini-kpi"><div class="mini-kpi-label">Em Negociação</div><div class="mini-kpi-value" style="color:var(--warning)" id="ov-in-neg">—</div></div>
+          <div class="mini-kpi"><div class="mini-kpi-label">Em Andamento</div><div class="mini-kpi-value" style="color:var(--info)" id="ov-in-prog">—</div></div>
+          <div class="mini-kpi"><div class="mini-kpi-label">Valor em Risco</div><div class="mini-kpi-value" style="color:var(--danger);font-size:1.1rem" id="ov-value">—</div></div>
+          <div class="mini-kpi"><div class="mini-kpi-label">Taxa Conversão</div><div class="mini-kpi-value" style="color:var(--brand-primary)" id="ov-conv-rate">—</div></div>
+        </div>
+
+        <div class="grid-2-1" style="margin-bottom:1.5rem">
+          <div class="section-card">
+            <div class="section-card-header"><span class="section-card-title">Cards por Estágio</span></div>
+            <div class="section-card-body"><div class="chart-wrap"><canvas id="chart-perf-stages"></canvas></div></div>
+          </div>
+          <div class="section-card">
+            <div class="section-card-header"><span class="section-card-title">Legenda</span></div>
+            <div class="section-card-body">
+              <div style="display:flex;flex-direction:column;gap:.5rem">
+                <div style="display:flex;align-items:center;gap:.5rem"><span style="width:10px;height:10px;border-radius:50%;background:#7c3aed;flex-shrink:0"></span><span class="badge badge-gray" style="flex:1">Backlog</span></div>
+                <div style="display:flex;align-items:center;gap:.5rem"><span style="width:10px;height:10px;border-radius:50%;background:#3b82f6;flex-shrink:0"></span><span class="badge badge-blue" style="flex:1">Em Andamento</span></div>
+                <div style="display:flex;align-items:center;gap:.5rem"><span style="width:10px;height:10px;border-radius:50%;background:#f59e0b;flex-shrink:0"></span><span class="badge badge-orange" style="flex:1">Em Negociação</span></div>
+                <div style="display:flex;align-items:center;gap:.5rem"><span style="width:10px;height:10px;border-radius:50%;background:#10b981;flex-shrink:0"></span><span class="badge badge-green" style="flex:1">Convertido</span></div>
+                <div style="display:flex;align-items:center;gap:.5rem"><span style="width:10px;height:10px;border-radius:50%;background:#ef4444;flex-shrink:0"></span><span class="badge badge-red" style="flex:1">Declinado</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="section-card">
+          <div class="section-card-header">
+            <span class="section-card-title">Todos os Cards</span>
+            <span class="badge badge-purple" id="perf-count">0 registros</span>
+          </div>
+          <div class="table-wrap">
+            <table id="perf-overview-table">
+              <thead><tr>
+                <th class="sortable" data-col="client_name">Cliente <i class="ph ph-arrows-down-up"></i></th>
+                <th class="sortable" data-col="seller_name">Vendedor <i class="ph ph-arrows-down-up"></i></th>
+                <th class="sortable" data-col="branch">Filial <i class="ph ph-arrows-down-up"></i></th>
+                <th class="sortable" data-col="state">Estado <i class="ph ph-arrows-down-up"></i></th>
+                <th class="sortable" data-col="stage">Estágio <i class="ph ph-arrows-down-up"></i></th>
+                <th class="sortable" data-col="reference">Referência <i class="ph ph-arrows-down-up"></i></th>
+                <th class="sortable" data-col="value_at_risk">Valor em Risco <i class="ph ph-arrows-down-up"></i></th>
+                <th class="sortable" data-col="avg_ticket">Ticket Médio <i class="ph ph-arrows-down-up"></i></th>
+                <th class="sortable" data-col="cycle_id">Ciclo <i class="ph ph-arrows-down-up"></i></th>
+                <th class="sortable" data-col="created_at">Criado em <i class="ph ph-arrows-down-up"></i></th>
+              </tr></thead>
+              <tbody id="perf-table-body"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── Tab: Actions ── -->
+      <div data-perf-panel="actions" style="display:none">
+        <div class="section-card">
+          <div class="section-card-header">
+            <span class="section-card-title"><i class="ph ph-lightning" style="color:var(--brand-primary)"></i> Ações Registradas</span>
+            <span class="badge badge-purple" id="actions-count">0 ações</span>
+          </div>
+          <div class="table-wrap">
+            <table id="actions-table">
+              <thead>
+                <tr>
+                  <th>Tipo</th>
+                  <th>Cliente</th>
+                  <th>Card</th>
+                  <th>Vendedor</th>
+                  <th>Filial</th>
+                  <th>Descrição</th>
+                  <th>Status</th>
+                  <th>Resultado do Card</th>
+                  <th>Data</th>
+                </tr>
+              </thead>
+              <tbody id="actions-table-body"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── Tab: Sellers ── -->
+      <div data-perf-panel="sellers" style="display:none">
+        <div id="sellers-totals" style="margin-bottom:1rem"></div>
+        <div class="section-card">
+          <div class="section-card-header">
+            <span class="section-card-title"><i class="ph ph-users-three" style="color:var(--brand-primary)"></i> Performance por Vendedor</span>
+            <div style="display:flex;gap:.4rem;align-items:center;flex-wrap:wrap">
+              <span style="font-size:.72rem;color:var(--text-muted)">Ordenar por:</span>
+              <button class="sort-btn active" data-sort="conversion_rate"><i class="ph ph-sort-descending"></i> Conversão</button>
+              <button class="sort-btn" data-sort="total_cards"><i class="ph ph-sort-descending"></i> Cards</button>
+              <button class="sort-btn" data-sort="total_actions"><i class="ph ph-sort-descending"></i> Ações</button>
+              <button class="sort-btn" data-sort="converted"><i class="ph ph-sort-descending"></i> Convertidos</button>
+            </div>
+          </div>
+          <div class="table-wrap">
+            <table id="sellers-table">
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th class="sortable" data-col="seller_name">Vendedor <i class="ph ph-arrows-down-up"></i></th>
+                  <th class="sortable" data-col="branch">Filial <i class="ph ph-arrows-down-up"></i></th>
+                  <th>Estado</th>
+                  <th class="sortable" data-col="total_cards">Total <i class="ph ph-arrows-down-up"></i></th>
+                  <th class="sortable" data-col="converted">Convertido <i class="ph ph-arrows-down-up"></i></th>
+                  <th class="sortable" data-col="declined">Declinado <i class="ph ph-arrows-down-up"></i></th>
+                  <th class="sortable" data-col="in_negotiation">Em Neg. <i class="ph ph-arrows-down-up"></i></th>
+                  <th class="sortable" data-col="conversion_rate">Conversão <i class="ph ph-arrows-down-up"></i></th>
+                  <th class="sortable" data-col="total_actions">Ações <i class="ph ph-arrows-down-up"></i></th>
+                  <th>Ver Ações</th>
+                </tr>
+              </thead>
+              <tbody id="sellers-table-body"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <footer class="footer">
+      <div class="footer-brand"><i class="ph-fill ph-brain"></i> Athena CRM</div>
+      <span>Churn Management Suite — Desenvolvido pela <strong>O2 Data</strong></span>
+      <span>&copy; <span id="footer-year"></span></span>
+    </footer>
+  </div>
+</div>
+
+<script src="../assets/js/core/api.js"></script>
+<script src="../assets/js/core/state.js"></script>
+<script src="../assets/js/core/theme.js"></script>
+<script src="../assets/js/core/utils.js"></script>
+<script src="../assets/js/core/router.js"></script>
+<script src="../assets/js/core/auth.js"></script>
+<script src="../assets/js/components/toast.js"></script>
+<script src="../assets/js/components/modal.js"></script>
+<script src="../assets/js/components/sidebar.js"></script>
+<script src="../assets/js/components/header.js"></script>
+<script src="../assets/js/components/footer.js"></script>
+<script src="../assets/js/components/charts.js"></script>
+<script src="../assets/js/components/kanban.js"></script>
+<script src="../assets/js/components/card.js"></script>
+<script src="../assets/js/components/table.js"></script>
+<script src="../assets/js/components/search.js"></script>
+<script src="../assets/js/pages/performance.js"></script>
+<script src="../assets/js/app.js"></script>
+</body></html>

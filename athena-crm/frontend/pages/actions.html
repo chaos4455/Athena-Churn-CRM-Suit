@@ -1,0 +1,797 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script>(function(){try{var t=localStorage.getItem('athena-theme');if(t==='dark')document.documentElement.classList.add('dark');}catch(e){}})();</script>
+  <title>Ações — Athena CRM</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/@phosphor-icons/web"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <link rel="stylesheet" href="../assets/css/variables.css">
+  <link rel="stylesheet" href="../assets/css/reset.css">
+  <link rel="stylesheet" href="../assets/css/layout.css">
+  <link rel="stylesheet" href="../assets/css/components.css">
+  <link rel="stylesheet" href="../assets/css/animations.css">
+  <link rel="stylesheet" href="../assets/css/dark-theme.css">
+  <link rel="stylesheet" href="../assets/css/responsive.css">
+  <style>
+    .kanban-filters {
+      display: flex; gap: .625rem; flex-wrap: wrap; align-items: center;
+      padding: .875rem 0; margin-bottom: .5rem;
+    }
+    .toggle-archived {
+      display: flex; align-items: center; gap: 6px;
+      font-size: .8rem; color: var(--text-secondary); cursor: pointer;
+    }
+    .toggle-archived input { cursor: pointer; accent-color: var(--brand-primary); }
+
+    /* ── Sort bar ── */
+    .kanban-sort-bar {
+      display: flex;
+      align-items: center;
+      gap: .4rem;
+      flex-wrap: wrap;
+      padding: .5rem 0 1rem;
+    }
+    .ksort-label {
+      font-size: .72rem;
+      font-weight: 700;
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      margin-right: .25rem;
+    }
+    .ksort-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 5px 12px;
+      border-radius: var(--radius-full);
+      font-size: .75rem;
+      font-weight: 600;
+      background: var(--bg-input);
+      border: 1.5px solid var(--border);
+      color: var(--text-secondary);
+      cursor: pointer;
+      transition: var(--t-fast);
+    }
+    .ksort-btn i { font-size: .8rem; }
+    .ksort-btn:hover {
+      border-color: var(--brand-primary);
+      color: var(--brand-primary);
+      background: var(--brand-light);
+    }
+    .ksort-btn.ksort-active {
+      background: var(--brand-gradient);
+      color: #fff;
+      border-color: transparent;
+      box-shadow: 0 2px 10px rgba(124,58,237,.3);
+    }
+    .ksort-hint {
+      font-size: .7rem;
+      color: var(--text-muted);
+      margin-left: auto;
+      font-style: italic;
+    }
+
+    /* ── Kanban card redesign ── */
+    .kc-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: .5rem;
+      margin-bottom: .5rem;
+    }
+    .kc-name {
+      font-size: .85rem;
+      font-weight: 700;
+      color: var(--text-primary);
+      line-height: 1.3;
+      flex: 1;
+      min-width: 0;
+    }
+    .kc-risk {
+      font-size: .78rem;
+      font-weight: 800;
+      color: var(--danger);
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+    .kc-score-bar {
+      height: 3px;
+      background: var(--border);
+      border-radius: var(--radius-full);
+      overflow: hidden;
+      margin-bottom: .625rem;
+    }
+    .kc-score-fill {
+      height: 100%;
+      border-radius: var(--radius-full);
+      transition: width .4s ease;
+    }
+    .kc-meta {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+      margin-bottom: .625rem;
+    }
+    .kc-meta-row {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      font-size: .72rem;
+      color: var(--text-secondary);
+    }
+    .kc-meta-row i { font-size: .8rem; color: var(--text-muted); width: 14px; flex-shrink: 0; }
+    .kc-meta-row strong { color: var(--text-primary); font-weight: 600; }
+    .kc-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding-top: .5rem;
+      border-top: 1px solid var(--border-light);
+    }
+
+    /* ── Drag & drop ── */
+    .kanban-card.kc-dragging {
+      opacity: .4;
+      transform: rotate(1deg) scale(.97);
+      box-shadow: var(--shadow-lg);
+      cursor: grabbing;
+    }
+    .kanban-col-body.kc-col-over {
+      background: var(--brand-light);
+      border-radius: var(--radius-md);
+      outline: 2px dashed var(--brand-primary);
+      outline-offset: -2px;
+    }
+    .kc-placeholder {
+      height: 80px;
+      background: var(--brand-light);
+      border: 2px dashed var(--brand-secondary);
+      border-radius: var(--radius-md);
+      margin-bottom: .625rem;
+      pointer-events: none;
+    }
+    .kanban-empty-col {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: .4rem;
+      padding: 2rem 1rem;
+      color: var(--text-muted);
+      font-size: .75rem;
+      opacity: .5;
+      pointer-events: none;
+    }
+    .kanban-empty-col i { font-size: 1.5rem; }
+
+    /* Input error shake */
+    .input-error {
+      border-color: var(--danger) !important;
+      box-shadow: 0 0 0 3px var(--danger-bg) !important;
+      animation: shake .3s ease;
+    }
+    @keyframes shake {
+      0%,100% { transform: translateX(0); }
+      25%      { transform: translateX(-6px); }
+      75%      { transform: translateX(6px); }
+    }
+
+    /* Stage-specific confirm buttons */
+    .btn-warning {
+      background: linear-gradient(135deg,#f59e0b,#fbbf24);
+      color: #fff;
+      box-shadow: 0 4px 14px rgba(245,158,11,.3);
+    }
+    .btn-warning:hover { transform: translateY(-1px); box-shadow: 0 8px 22px rgba(245,158,11,.4); }
+    .btn-success-custom {
+      background: linear-gradient(135deg,#10b981,#34d399);
+      color: #fff;
+      box-shadow: 0 4px 14px rgba(16,185,129,.3);
+    }
+    .btn-success-custom:hover { transform: translateY(-1px); box-shadow: 0 8px 22px rgba(16,185,129,.4); }
+
+    /* ── Wide modal (card detail) ── */
+    .modal-wide {
+      max-width: 900px;
+      padding: 0;
+      overflow: hidden;
+    }
+    .modal-wide .modal-header {
+      padding: 1.25rem 1.75rem;
+      margin-bottom: 0;
+      border-bottom: 1px solid var(--border);
+    }
+    .modal-body-cols {
+      display: grid;
+      grid-template-columns: 1fr 340px;
+      min-height: 0;
+      max-height: calc(90vh - 70px);
+    }
+    .modal-col-left {
+      padding: 1.5rem 1.75rem;
+      overflow-y: auto;
+      border-right: 1px solid var(--border);
+    }
+    .modal-col-right {
+      padding: 1.5rem 1.5rem;
+      overflow-y: auto;
+      background: var(--bg-input);
+    }
+    html.dark .modal-col-right { background: rgba(255,255,255,.025); }
+
+    .modal-info-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: .625rem;
+      margin-bottom: 1.25rem;
+    }
+    .modal-info-item {
+      background: var(--bg-input);
+      border: 1px solid var(--border-light);
+      border-radius: var(--radius-sm);
+      padding: .625rem .875rem;
+    }
+    .modal-info-item--full { grid-column: 1 / -1; }
+    .modal-info-label {
+      font-size: .65rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .5px;
+      color: var(--text-muted);
+      margin-bottom: 3px;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .modal-info-label i { font-size: .75rem; }
+    .modal-info-value {
+      font-size: .875rem;
+      font-weight: 500;
+      color: var(--text-primary);
+    }
+    .modal-info-value--strong { font-weight: 700; }
+    .modal-info-value--risk {
+      font-size: 1.1rem;
+      font-weight: 800;
+      color: var(--danger);
+    }
+    .modal-section-title {
+      font-size: .85rem;
+      font-weight: 700;
+      color: var(--text-primary);
+      margin-bottom: .875rem;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .modal-section-title i { color: var(--brand-primary); }
+    .modal-history-scroll {
+      max-height: 280px;
+      overflow-y: auto;
+      padding-right: 2px;
+    }
+
+    /* Responsive: stack on small screens */
+    @media (max-width: 768px) {
+      .modal-body-cols { grid-template-columns: 1fr; max-height: none; }
+      .modal-col-left  { border-right: none; border-bottom: 1px solid var(--border); }
+      .modal-wide      { max-width: 100%; }
+    }
+
+    /* ── Action items in modal ── */
+    .action-item {
+      display: flex;
+      gap: .875rem;
+      padding: .875rem 0;
+      border-bottom: 1px solid var(--border-light);
+    }
+    .action-item:last-child { border-bottom: none; }
+
+    .action-icon {
+      width: 36px; height: 36px;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: .95rem;
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+    .action-icon--call     { background: var(--info-bg);    color: var(--info); }
+    .action-icon--email    { background: var(--brand-light); color: var(--brand-primary); }
+    .action-icon--meeting  { background: var(--success-bg);  color: var(--success); }
+    .action-icon--whatsapp { background: var(--success-bg);  color: var(--success); }
+    .action-icon--note     { background: var(--bg-input);    color: var(--text-muted); }
+    .action-icon--proposal { background: var(--warning-bg);  color: var(--warning); }
+
+    .action-body { flex: 1; min-width: 0; }
+
+    .action-header {
+      display: flex;
+      align-items: center;
+      gap: .5rem;
+      margin-bottom: .35rem;
+      flex-wrap: wrap;
+    }
+    .action-type-label {
+      font-size: .78rem;
+      font-weight: 700;
+      color: var(--text-primary);
+    }
+    .action-status-pill {
+      font-size: .65rem;
+      font-weight: 700;
+      padding: 2px 8px;
+      border-radius: var(--radius-full);
+    }
+    .action-time {
+      font-size: .68rem;
+      color: var(--text-muted);
+      margin-left: auto;
+      display: flex;
+      align-items: center;
+      gap: 3px;
+      white-space: nowrap;
+    }
+
+    /* Chips row */
+    .action-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: .35rem;
+      margin-bottom: .4rem;
+    }
+    .action-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-size: .7rem;
+      font-weight: 600;
+      padding: 2px 8px;
+      border-radius: var(--radius-full);
+      border: 1px solid var(--border);
+      background: var(--bg-input);
+      color: var(--text-secondary);
+      white-space: nowrap;
+      max-width: 200px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .action-chip i { font-size: .75rem; flex-shrink: 0; }
+    .action-chip--client {
+      background: var(--brand-light);
+      color: var(--brand-primary);
+      border-color: var(--brand-secondary);
+      cursor: pointer;
+      text-decoration: none;
+    }
+    .action-chip--client:hover { background: var(--brand-primary); color: #fff; }
+    .action-chip--card {
+      background: var(--warning-bg);
+      color: var(--warning);
+      border-color: transparent;
+      cursor: pointer;
+    }
+    .action-chip--card:hover { background: var(--warning); color: #fff; }
+    .action-chip--seller {
+      background: var(--success-bg);
+      color: var(--success);
+      border-color: transparent;
+    }
+
+    .action-description {
+      font-size: .82rem;
+      color: var(--text-secondary);
+      line-height: 1.5;
+      margin-bottom: .2rem;
+    }
+    .action-outcome {
+      font-size: .75rem;
+      color: var(--success);
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      margin-top: .25rem;
+    }
+
+    /* Card result block */
+    .action-result {
+      margin-top: .5rem;
+      padding: .5rem .75rem;
+      background: var(--bg-input);
+      border: 1px solid var(--border-light);
+      border-radius: var(--radius-sm);
+      border-left: 3px solid var(--brand-primary);
+    }
+    .action-result-label {
+      font-size: .62rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .5px;
+      color: var(--text-muted);
+      margin-bottom: .35rem;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .action-result-label i { color: var(--brand-primary); }
+    .action-result-body {
+      display: flex;
+      align-items: center;
+      gap: .4rem;
+      flex-wrap: wrap;
+    }
+    .action-result-note {
+      font-size: .68rem;
+      color: var(--text-muted);
+      margin-left: auto;
+      white-space: nowrap;
+    }
+  </style>
+</head>
+<body data-page="actions">
+<div class="sidebar-overlay" id="sidebar-overlay"></div>
+<div class="app">
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-logo">
+      <div class="logo-icon"><i class="ph-fill ph-brain"></i></div>
+      <div class="logo-text">Athena CRM <span>Churn Management Suite</span></div>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="nav-section">
+        <span class="nav-label">Principal</span>
+        <ul>
+          <li class="nav-item"><a href="dashboard.html"   class="nav-link"><i class="ph ph-squares-four"></i> Dashboard</a></li>
+          <li class="nav-item"><a href="actions.html"     class="nav-link active"><i class="ph ph-kanban"></i> Ações / Kanban</a></li>
+          <li class="nav-item"><a href="performance.html" class="nav-link"><i class="ph ph-chart-bar"></i> Performance</a></li>
+          <li class="nav-item"><a href="clients.html"     class="nav-link"><i class="ph ph-users"></i> Clientes</a></li>
+        </ul>
+      </div>
+    </nav>
+    <div class="sidebar-footer"><strong>O2 Data</strong><br>&copy; <span id="footer-year"></span> Athena CRM</div>
+  </aside>
+
+  <div class="main">
+    <header class="header">
+      <button class="icon-btn" id="sidebar-toggle" style="display:none"><i class="ph ph-list"></i></button>
+      <div class="header-search-wrap">
+        <div class="header-search">
+          <i class="ph ph-magnifying-glass"></i>
+          <input type="text" id="global-search" placeholder="Buscar clientes ou cards..." autocomplete="off">
+        </div>
+        <div id="global-search-results" class="global-search-dropdown" hidden></div>
+      </div>
+      <div class="header-actions">
+        <button class="icon-btn" id="theme-btn"><i class="ph ph-moon" id="theme-icon"></i></button>
+        <button class="icon-btn"><i class="ph ph-bell"></i><span class="notif-dot"></span></button>
+        <div class="user-chip">
+          <div class="avatar">AD</div>
+          <div><div class="user-name">Admin</div><div class="user-role">Gestor</div></div>
+        </div>
+      </div>
+    </header>
+
+    <div class="content animate-fade">
+      <div class="page-header">
+        <div>
+          <h1 class="page-title">Ações / Kanban</h1>
+          <p class="page-subtitle">Gerencie o fluxo de churn dos seus clientes</p>
+        </div>
+        <button class="btn btn-primary" id="btn-new-card">
+          <i class="ph ph-plus"></i> Novo Card
+        </button>
+      </div>
+
+      <!-- Filters bar -->
+      <div class="kanban-filters">
+        <select class="form-control" id="kanban-filter-branch" style="width:150px"></select>
+        <select class="form-control" id="kanban-filter-state"  style="width:130px"></select>
+        <select class="form-control" id="kanban-filter-seller" style="width:180px"></select>
+        <label class="toggle-archived">
+          <input type="checkbox" id="kanban-toggle-archived">
+          Exibir arquivados
+        </label>
+      </div>
+
+      <!-- Sort bar -->
+      <div class="kanban-sort-bar">
+        <span class="ksort-label"><i class="ph ph-funnel-simple"></i> Ordenar:</span>
+        <button class="ksort-btn" data-kanban-sort="ltv" onclick="kanban.setSort('ltv')">
+          <i class="ph ph-sort-descending"></i> LTV
+        </button>
+        <button class="ksort-btn" data-kanban-sort="ticket" onclick="kanban.setSort('ticket')">
+          <i class="ph ph-sort-descending"></i> Ticket Médio
+        </button>
+        <button class="ksort-btn" data-kanban-sort="recent" onclick="kanban.setSort('recent')">
+          <i class="ph ph-clock-counter-clockwise"></i> Interação Recente
+        </button>
+        <span class="ksort-hint" id="ksort-hint"></span>
+      </div>
+
+      <div id="kanban-board" class="kanban-board"></div>
+    </div>
+
+    <footer class="footer">
+      <div class="footer-brand"><i class="ph-fill ph-brain"></i> Athena CRM</div>
+      <span>Churn Management Suite — Desenvolvido pela <strong>O2 Data</strong></span>
+      <span>&copy; <span id="footer-year"></span></span>
+    </footer>
+  </div>
+</div>
+
+<!-- Modal: Novo Card -->
+<div class="modal-overlay" id="modal-new-card">
+  <div class="modal animate-scale">
+    <div class="modal-header">
+      <span class="modal-title"><i class="ph-fill ph-plus-circle" style="color:var(--brand-primary)"></i> Novo Card</span>
+      <button class="modal-close icon-btn"><i class="ph ph-x"></i></button>
+    </div>
+    <form id="form-new-card">
+      <div class="grid-2">
+        <div class="form-group">
+          <label class="form-label">ID do Cliente</label>
+          <input name="client_id" class="form-control" placeholder="UUID do cliente" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Vendedor</label>
+          <select name="seller_id" id="new-card-seller" class="form-control" required>
+            <option value="">Selecione...</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Título</label>
+        <input name="title" class="form-control" placeholder="Ex: Risco de churn detectado" required>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Descrição</label>
+        <textarea name="description" class="form-control" placeholder="Detalhes da ação..."></textarea>
+      </div>
+      <div class="grid-2">
+        <div class="form-group">
+          <label class="form-label">Filial</label>
+          <input name="branch" class="form-control" placeholder="Ex: SP-Centro">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Estado (UF)</label>
+          <input name="state" class="form-control" placeholder="Ex: SP" maxlength="2">
+        </div>
+      </div>
+      <div class="grid-2">
+        <div class="form-group">
+          <label class="form-label">Ciclo</label>
+          <input name="cycle_id" class="form-control" placeholder="Ex: 2025-01">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Valor em Risco (R$)</label>
+          <input name="value_at_risk" type="number" step="0.01" min="0" class="form-control" placeholder="0,00">
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary modal-close">Cancelar</button>
+        <button type="submit" class="btn btn-primary"><i class="ph ph-check"></i> Criar Card</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Modal: Card Detail -->
+<div class="modal-overlay" id="modal-card-detail">
+  <div class="modal modal-wide animate-scale">
+    <!-- Header -->
+    <div class="modal-header">
+      <span class="modal-title"><i class="ph-fill ph-kanban" style="color:var(--brand-primary)"></i> <span id="modal-card-title">Detalhe do Card</span></span>
+      <button class="modal-close icon-btn"><i class="ph ph-x"></i></button>
+    </div>
+
+    <!-- Two-column body -->
+    <div class="modal-body-cols">
+
+      <!-- LEFT: card info + history -->
+      <div class="modal-col-left">
+        <!-- Info grid -->
+        <div class="modal-info-grid">
+          <div class="modal-info-item">
+            <div class="modal-info-label"><i class="ph ph-user"></i> Cliente</div>
+            <div class="modal-info-value" id="modal-card-client">—</div>
+          </div>
+          <div class="modal-info-item">
+            <div class="modal-info-label"><i class="ph ph-user-circle"></i> Vendedor</div>
+            <div class="modal-info-value" id="modal-card-seller">—</div>
+          </div>
+          <div class="modal-info-item">
+            <div class="modal-info-label"><i class="ph ph-flag"></i> Estágio</div>
+            <div class="modal-info-value" id="modal-card-stage">—</div>
+          </div>
+          <div class="modal-info-item">
+            <div class="modal-info-label"><i class="ph ph-arrows-clockwise"></i> Ciclo</div>
+            <div class="modal-info-value" id="modal-card-cycle">—</div>
+          </div>
+          <div class="modal-info-item">
+            <div class="modal-info-label"><i class="ph ph-buildings"></i> Filial</div>
+            <div class="modal-info-value" id="modal-card-branch">—</div>
+          </div>
+          <div class="modal-info-item">
+            <div class="modal-info-label"><i class="ph ph-map-pin"></i> Estado</div>
+            <div class="modal-info-value" id="modal-card-state">—</div>
+          </div>
+          <div class="modal-info-item">
+            <div class="modal-info-label"><i class="ph ph-trend-up"></i> LTV</div>
+            <div class="modal-info-value modal-info-value--strong" id="modal-card-ltv">—</div>
+          </div>
+          <div class="modal-info-item">
+            <div class="modal-info-label"><i class="ph ph-receipt"></i> Ticket Médio</div>
+            <div class="modal-info-value modal-info-value--strong" id="modal-card-ticket">—</div>
+          </div>
+          <div class="modal-info-item modal-info-item--full">
+            <div class="modal-info-label"><i class="ph ph-warning-circle"></i> Valor em Risco</div>
+            <div class="modal-info-value modal-info-value--risk" id="modal-card-risk">—</div>
+          </div>
+          <div class="modal-info-item">
+            <div class="modal-info-label"><i class="ph ph-calendar-blank"></i> Última Compra</div>
+            <div class="modal-info-value" id="modal-card-last-purchase">—</div>
+          </div>
+          <div class="modal-info-item modal-info-item--full">
+            <div class="modal-info-label"><i class="ph ph-fingerprint"></i> ID do Card</div>
+            <div class="modal-info-value" id="modal-card-id">—</div>
+          </div>
+        </div>
+
+        <div class="divider"></div>
+
+        <!-- History -->
+        <div class="modal-section-title"><i class="ph ph-clock-counter-clockwise"></i> Histórico do Card</div>
+        <div id="modal-card-actions" class="modal-history-scroll"></div>
+      </div>
+
+      <!-- RIGHT: register action -->
+      <div class="modal-col-right">
+        <div class="modal-section-title"><i class="ph ph-paper-plane-tilt"></i> Registrar Ação</div>
+        <form id="form-card-action">
+          <input type="hidden" name="card_id" id="form-card-action-card-id">
+          <input type="hidden" name="client_id" id="form-card-action-client-id">
+          <div class="form-group">
+            <label class="form-label">Tipo de Ação</label>
+            <select name="action_type" class="form-control">
+              <option value="call">📞 Ligação</option>
+              <option value="email">📧 E-mail</option>
+              <option value="meeting">🤝 Reunião</option>
+              <option value="whatsapp">💬 WhatsApp</option>
+              <option value="note">📝 Nota</option>
+              <option value="proposal">📄 Proposta</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Vendedor</label>
+            <select name="seller_id" class="form-control" required>
+              <option value="">Selecione o vendedor</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Descrição</label>
+            <textarea name="description" class="form-control" rows="4" placeholder="Descreva a ação realizada..." required></textarea>
+          </div>
+          <button type="submit" class="btn btn-primary btn-block">
+            <i class="ph ph-paper-plane-tilt"></i> Registrar Ação
+          </button>
+        </form>
+      </div>
+
+    </div><!-- /modal-body-cols -->
+  </div>
+</div>
+
+<!-- Modal: Stage Reference (Orçamento / Pedido / Declínio) -->
+<div class="modal-overlay" id="modal-stage-ref">
+  <div class="modal animate-scale" style="max-width:480px">
+
+    <!-- Accent bar -->
+    <div id="stage-ref-accent-bar" style="height:4px;border-radius:var(--radius-xl) var(--radius-xl) 0 0;margin:-1.75rem -1.75rem 1.5rem;background:var(--warning)"></div>
+
+    <div class="modal-header" style="margin-bottom:1.25rem">
+      <span class="modal-title" id="stage-ref-title">
+        <i id="stage-ref-title-icon" class="ph-fill ph-handshake" style="color:var(--warning)"></i>
+        <span id="stage-ref-title-text">Registrar Orçamento</span>
+      </span>
+      <button class="icon-btn" id="stage-ref-cancel"><i class="ph ph-x"></i></button>
+    </div>
+
+    <!-- Card context chip -->
+    <div style="background:var(--bg-input);border:1px solid var(--border);border-radius:var(--radius-md);
+      padding:.75rem 1rem;margin-bottom:1.25rem;display:flex;align-items:center;gap:.875rem">
+      <div style="width:34px;height:34px;border-radius:var(--radius-sm);background:var(--brand-gradient);
+        display:flex;align-items:center;justify-content:center;color:#fff;font-size:.95rem;flex-shrink:0">
+        <i class="ph ph-user"></i>
+      </div>
+      <div style="flex:1;min-width:0">
+        <div id="stage-ref-client-name" style="font-weight:700;font-size:.875rem;
+          overflow:hidden;text-overflow:ellipsis;white-space:nowrap">—</div>
+        <div id="stage-ref-card-title" style="font-size:.72rem;color:var(--text-muted);
+          overflow:hidden;text-overflow:ellipsis;white-space:nowrap">—</div>
+      </div>
+      <div style="text-align:right;flex-shrink:0;line-height:1.4">
+        <div id="stage-ref-risk" style="font-size:.82rem;font-weight:800;color:var(--danger)">—</div>
+        <div id="stage-ref-ltv" style="font-size:.68rem;color:var(--text-muted)">—</div>
+      </div>
+    </div>
+
+    <!-- Reference number (hidden for declined) -->
+    <div id="stage-ref-ref-group" class="form-group">
+      <label class="form-label" id="stage-ref-input-label">Número do Orçamento</label>
+      <div style="position:relative">
+        <i class="ph ph-hash" style="position:absolute;left:10px;top:50%;transform:translateY(-50%);
+          color:var(--text-muted);font-size:1rem;pointer-events:none"></i>
+        <input id="stage-ref-input" class="form-control" style="padding-left:32px"
+          placeholder="Ex: ORC-2025-001" autocomplete="off" spellcheck="false">
+      </div>
+      <div id="stage-ref-hint" style="font-size:.7rem;color:var(--text-muted);margin-top:.3rem"></div>
+    </div>
+
+    <!-- Motivo (declined only) -->
+    <div id="stage-ref-motivo-group" class="form-group" style="display:none">
+      <label class="form-label">Motivo do Declínio <span style="color:var(--danger)">*</span></label>
+      <select id="stage-ref-motivo" class="form-control">
+        <option value="">Selecione o motivo...</option>
+        <option value="Preço acima do esperado">Preço acima do esperado</option>
+        <option value="Cliente escolheu concorrente">Cliente escolheu concorrente</option>
+        <option value="Sem budget no momento">Sem budget no momento</option>
+        <option value="Projeto cancelado pelo cliente">Projeto cancelado pelo cliente</option>
+        <option value="Sem retorno do cliente">Sem retorno do cliente</option>
+        <option value="Prazo de entrega incompatível">Prazo de entrega incompatível</option>
+        <option value="Produto não atende necessidade">Produto não atende necessidade</option>
+        <option value="Outro">Outro</option>
+      </select>
+    </div>
+
+    <!-- Seller -->
+    <div class="form-group">
+      <label class="form-label">Vendedor Responsável <span style="color:var(--danger)">*</span></label>
+      <select id="stage-ref-seller" class="form-control">
+        <option value="">Selecione o vendedor</option>
+      </select>
+    </div>
+
+    <!-- Notes -->
+    <div id="stage-ref-notes-group" class="form-group">
+      <label class="form-label">Observações <span style="color:var(--text-muted);font-weight:400">(opcional)</span></label>
+      <textarea id="stage-ref-notes" class="form-control" rows="2"
+        placeholder="Detalhes adicionais..."></textarea>
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn btn-secondary" id="stage-ref-cancel-btn">
+        <i class="ph ph-x"></i> Cancelar
+      </button>
+      <button class="btn btn-primary" id="stage-ref-confirm-btn">
+        <i class="ph ph-check-circle"></i>
+        <span>Confirmar</span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<script src="../assets/js/core/api.js"></script>
+<script src="../assets/js/core/state.js"></script>
+<script src="../assets/js/core/theme.js"></script>
+<script src="../assets/js/core/utils.js"></script>
+<script src="../assets/js/core/router.js"></script>
+<script src="../assets/js/core/auth.js"></script>
+<script src="../assets/js/components/toast.js"></script>
+<script src="../assets/js/components/modal.js"></script>
+<script src="../assets/js/components/sidebar.js"></script>
+<script src="../assets/js/components/header.js"></script>
+<script src="../assets/js/components/footer.js"></script>
+<script src="../assets/js/components/charts.js"></script>
+<script src="../assets/js/components/kanban.js"></script>
+<script src="../assets/js/components/card.js"></script>
+<script src="../assets/js/components/table.js"></script>
+<script src="../assets/js/components/search.js"></script>
+<script src="../assets/js/components/stage-ref-modal.js"></script>
+<script src="../assets/js/pages/actions.js"></script>
+<script src="../assets/js/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,96 @@
+/* ============================================================
+   Athena CRM — Responsive
+   ============================================================ */
+
+/* ── 1280px — large desktop ──────────────────────────────────*/
+@media (max-width: 1280px) {
+  .kpi-grid { grid-template-columns: repeat(3, 1fr); }
+  .grid-4   { grid-template-columns: repeat(2, 1fr); }
+}
+
+/* ── 1024px — tablet landscape ──────────────────────────────*/
+@media (max-width: 1024px) {
+  .kpi-grid { grid-template-columns: repeat(2, 1fr); }
+  .grid-2-1,
+  .grid-1-2 { grid-template-columns: 1fr; }
+  .grid-3   { grid-template-columns: repeat(2, 1fr); }
+  .content  { padding: 1.5rem 1.5rem; }
+  .kanban-board { grid-template-columns: repeat(3, 1fr); }
+}
+
+/* ── 768px — tablet portrait ─────────────────────────────────*/
+@media (max-width: 768px) {
+  /* Sidebar becomes drawer */
+  .sidebar {
+    transform: translateX(-100%);
+    box-shadow: var(--shadow-lg);
+  }
+  .sidebar.open { transform: translateX(0); }
+
+  /* Main takes full width */
+  .main { margin-left: 0; width: 100%; }
+
+  /* Show hamburger */
+  #sidebar-toggle { display: flex !important; }
+
+  /* Header */
+  .header { padding: 0 1rem; gap: .5rem; }
+  .header .header-search-wrap,
+  .header .header-search { display: none; }
+  .user-name, .user-role { display: none; }
+  .user-chip { padding: 4px; }
+
+  /* Content */
+  .content { padding: 1.25rem 1rem; }
+
+  /* Page header */
+  .page-header { flex-direction: column; align-items: flex-start; }
+  .page-header > div:last-child { width: 100%; }
+  .page-header > div:last-child .form-control { flex: 1; min-width: 0; }
+
+  /* Grids */
+  .kpi-grid { grid-template-columns: 1fr 1fr; }
+  .grid-2   { grid-template-columns: 1fr; }
+  .grid-3   { grid-template-columns: 1fr; }
+  .grid-4   { grid-template-columns: 1fr 1fr; }
+  .grid-2-1 { grid-template-columns: 1fr; }
+  .grid-1-2 { grid-template-columns: 1fr; }
+
+  /* Kanban */
+  .kanban-board { grid-template-columns: repeat(2, 1fr); }
+  .kanban-col   { width: 100%; }
+
+  /* Footer */
+  .footer { flex-direction: column; text-align: center; gap: .25rem; }
+
+  /* Client profile */
+  .client-profile { flex-direction: column; align-items: flex-start; }
+  .client-stats   { gap: 1rem; }
+
+  /* Section card header wraps */
+  .section-card-header { flex-wrap: wrap; gap: .5rem; }
+}
+
+/* ── 480px — mobile ──────────────────────────────────────────*/
+@media (max-width: 480px) {
+  .kpi-grid { grid-template-columns: 1fr 1fr; }
+  .grid-4   { grid-template-columns: 1fr; }
+
+  .kpi-value { font-size: 1.6rem; }
+
+  .page-title { font-size: 1.25rem; }
+
+  .chart-wrap { height: 200px; }
+
+  .client-stats { flex-direction: column; gap: .5rem; }
+
+  .kanban-board { grid-template-columns: 1fr; }
+
+  /* Table: hide less important columns */
+  .table-wrap table thead th:nth-child(4),
+  .table-wrap table tbody td:nth-child(4),
+  .table-wrap table thead th:nth-child(5),
+  .table-wrap table tbody td:nth-child(5) {
+    display: none;
+  }
+}

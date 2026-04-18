@@ -1,0 +1,24 @@
+# ============================================================
+#  Athena CRM — Configuração do Sistema
+#  O2 Data
+# ============================================================
+
+app:
+  name: "Athena CRM - Churn Management Suite"
+  version: "1.0.0"
+  debug: true
+
+database:
+  url: "sqlite:///./athena_crm.db"
+
+security:
+  secret_key: "athena-super-secret-key-change-in-production"
+  algorithm: "HS256"
+  access_token_expire_minutes: 1440
+
+  # Senha para fechar o ciclo e arquivar todos os cards ativos
+  cycle_close_password: "admin"
+
+cors:
+  origins:
+    - "*"

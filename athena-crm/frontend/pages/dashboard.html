@@ -1,0 +1,931 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script>(function(){try{var t=localStorage.getItem('athena-theme');if(t==='dark')document.documentElement.classList.add('dark');}catch(e){}})();</script>
+  <title>Dashboard — Athena CRM</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/@phosphor-icons/web"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <link rel="stylesheet" href="../assets/css/variables.css">
+  <link rel="stylesheet" href="../assets/css/reset.css">
+  <link rel="stylesheet" href="../assets/css/layout.css">
+  <link rel="stylesheet" href="../assets/css/components.css">
+  <link rel="stylesheet" href="../assets/css/animations.css">
+  <link rel="stylesheet" href="../assets/css/dark-theme.css">
+  <link rel="stylesheet" href="../assets/css/responsive.css">
+  <style>
+    /* ── Page header ─────────────────────────────────────── */
+    .dash-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      margin-bottom: 1.75rem;
+    }
+    .dash-header-left { flex-shrink: 0; }
+    .dash-title {
+      font-size: 1.6rem;
+      font-weight: 800;
+      letter-spacing: -.025em;
+      color: var(--text-primary);
+      margin-bottom: .2rem;
+    }
+    .dash-subtitle {
+      font-size: .82rem;
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .dash-subtitle .live-dot {
+      width: 7px; height: 7px;
+      border-radius: 50%;
+      background: var(--success);
+      animation: pulse 2s infinite;
+      flex-shrink: 0;
+    }
+    .dash-filters {
+      display: flex;
+      gap: .5rem;
+      align-items: center;
+      flex-wrap: nowrap;
+      flex: 1;
+      justify-content: flex-end;
+    }
+    .dash-filters .form-control {
+      height: 36px;
+      font-size: .8rem;
+      padding: 0 10px;
+      width: 150px;
+      min-width: 0;
+      flex-shrink: 1;
+    }
+    #filter-seller { width: 170px; }
+
+    @media (max-width: 900px) {
+      .dash-header { flex-wrap: wrap; }
+      .dash-filters { flex-wrap: wrap; justify-content: flex-start; }
+      .dash-filters .form-control { width: 130px; }
+      #filter-seller { width: 150px; }
+    }
+    @media (max-width: 600px) {
+      .dash-filters .form-control,
+      #filter-seller { width: 100%; }
+      .dash-filters { flex-direction: column; align-items: stretch; }
+    }
+
+    /* ── Close cycle button ── */
+    .btn-cycle-close {
+      background: linear-gradient(135deg, #ef4444, #f87171);
+      color: #fff;
+      box-shadow: 0 4px 14px rgba(239,68,68,.3);
+      white-space: nowrap;
+    }
+    .btn-cycle-close:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 8px 22px rgba(239,68,68,.4);
+    }
+
+    /* ── Cycle close modal ── */
+    .cycle-modal-warning {
+      background: var(--danger-bg);
+      border: 1.5px solid rgba(239,68,68,.3);
+      border-radius: var(--radius-md);
+      padding: 1rem 1.25rem;
+      margin-bottom: 1.25rem;
+      display: flex;
+      gap: .75rem;
+      align-items: flex-start;
+    }
+    .cycle-modal-warning i { color: var(--danger); font-size: 1.25rem; flex-shrink: 0; margin-top: 1px; }
+    .cycle-modal-warning-text { font-size: .85rem; color: var(--danger); line-height: 1.5; }
+    .cycle-modal-warning-text strong { font-weight: 700; display: block; margin-bottom: .2rem; }
+
+    /* ── KPI row 1 — main metrics ────────────────────────── */
+    .kpi-main-grid {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 1rem;
+      margin-bottom: 1rem;
+    }
+    .kpi-main-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 1.25rem 1.4rem;
+      box-shadow: var(--shadow-xs);
+      transition: var(--t-base);
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      gap: .5rem;
+    }
+    .kpi-main-card::after {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 3px;
+      border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+      opacity: 0;
+      transition: opacity .2s;
+    }
+    .kpi-main-card:hover { box-shadow: var(--shadow-md); transform: translateY(-2px); }
+    .kpi-main-card:hover::after { opacity: 1; }
+    .kpi-main-card.purple::after { background: var(--brand-gradient); }
+    .kpi-main-card.red::after    { background: linear-gradient(90deg,#ef4444,#f87171); }
+    .kpi-main-card.orange::after { background: linear-gradient(90deg,#f59e0b,#fbbf24); }
+    .kpi-main-card.blue::after   { background: linear-gradient(90deg,#3b82f6,#60a5fa); }
+    .kpi-main-card.green::after  { background: linear-gradient(90deg,#10b981,#34d399); }
+
+    .kpi-main-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .kpi-main-label {
+      font-size: .68rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .7px;
+      color: var(--text-muted);
+    }
+    .kpi-main-icon {
+      width: 36px; height: 36px;
+      border-radius: var(--radius-sm);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1rem;
+      flex-shrink: 0;
+    }
+    .kpi-main-icon.purple { background: var(--brand-light);  color: var(--brand-primary); }
+    .kpi-main-icon.red    { background: var(--danger-bg);    color: var(--danger); }
+    .kpi-main-icon.orange { background: var(--warning-bg);   color: var(--warning); }
+    .kpi-main-icon.blue   { background: var(--info-bg);      color: var(--info); }
+    .kpi-main-icon.green  { background: var(--success-bg);   color: var(--success); }
+
+    .kpi-main-value {
+      font-size: 1.75rem;
+      font-weight: 800;
+      line-height: 1;
+      letter-spacing: -.03em;
+      color: var(--text-primary);
+    }
+    .kpi-main-value.kpi-main-value--sm {
+      font-size: 1.3rem;
+      letter-spacing: -.02em;
+    }
+    .kpi-main-footer {
+      font-size: .72rem;
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      margin-top: auto;
+    }
+    .kpi-main-footer i { font-size: .8rem; }
+    .kpi-main-footer.up     { color: var(--success); }
+    .kpi-main-footer.down   { color: var(--danger); }
+    .kpi-main-footer.warn   { color: var(--warning); }
+
+    /* ── KPI row 2 — stage pipeline ──────────────────────── */
+    .pipeline-row {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: .75rem;
+      margin-bottom: 1.5rem;
+    }
+    .pipeline-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: .875rem 1rem;
+      display: flex;
+      align-items: center;
+      gap: .75rem;
+      transition: var(--t-fast);
+      box-shadow: var(--shadow-xs);
+    }
+    .pipeline-card:hover { box-shadow: var(--shadow-sm); transform: translateY(-1px); }
+    .pipeline-dot {
+      width: 10px; height: 10px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+    .pipeline-info { flex: 1; min-width: 0; }
+    .pipeline-label {
+      font-size: .68rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: .5px;
+      color: var(--text-muted);
+      margin-bottom: 2px;
+    }
+    .pipeline-value {
+      font-size: 1.35rem;
+      font-weight: 800;
+      line-height: 1;
+      letter-spacing: -.02em;
+    }
+    .pipeline-pct {
+      font-size: .68rem;
+      font-weight: 600;
+      padding: 2px 7px;
+      border-radius: var(--radius-full);
+      white-space: nowrap;
+    }
+
+    /* ── Charts grid ─────────────────────────────────────── */
+    .charts-row-1 {
+      display: grid;
+      grid-template-columns: 2fr 1fr;
+      gap: 1rem;
+      margin-bottom: 1rem;
+    }
+    .charts-row-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 1rem;
+      margin-bottom: 1rem;
+    }
+
+    /* ── Section card improvements ───────────────────────── */
+    .sc {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-xs);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+    .sc-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 1rem 1.25rem;
+      border-bottom: 1px solid var(--border);
+      gap: .75rem;
+      flex-shrink: 0;
+    }
+    .sc-title {
+      font-size: .85rem;
+      font-weight: 700;
+      color: var(--text-primary);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .sc-title i { color: var(--brand-primary); font-size: .95rem; }
+    .sc-body { padding: 1.25rem; flex: 1; }
+    .sc-body-flush { flex: 1; }
+
+    /* ── Breakdown tables ────────────────────────────────── */
+    .breakdown-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+      margin-bottom: 1rem;
+    }
+    .bk-table { width: 100%; border-collapse: collapse; }
+    .bk-table thead th {
+      font-size: .62rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .6px;
+      color: var(--text-muted);
+      padding: .5rem .75rem;
+      text-align: left;
+      background: var(--bg-input);
+      border-bottom: 1px solid var(--border);
+    }
+    .bk-table thead th:not(:first-child) { text-align: right; }
+    .bk-table tbody td {
+      padding: .6rem .75rem;
+      font-size: .8rem;
+      border-bottom: 1px solid var(--border-light);
+      vertical-align: middle;
+    }
+    .bk-table tbody tr:last-child td { border-bottom: none; }
+    .bk-table tbody tr { transition: background .1s; }
+    .bk-table tbody tr:hover td { background: var(--bg-hover); }
+    .bk-table td:not(:first-child) { text-align: right; }
+    .bk-name { font-weight: 600; color: var(--text-primary); }
+    .bk-risk { font-weight: 700; color: var(--danger); }
+    .bk-bar-wrap { display: flex; align-items: center; gap: 6px; }
+    .bk-bar {
+      flex: 1;
+      height: 5px;
+      background: var(--border);
+      border-radius: var(--radius-full);
+      overflow: hidden;
+      min-width: 40px;
+    }
+    .bk-bar-fill {
+      height: 100%;
+      border-radius: var(--radius-full);
+      background: var(--brand-gradient);
+      transition: width .6s ease;
+    }
+
+    /* ── Seller tables ───────────────────────────────────── */
+    .seller-tables-row {
+      margin-bottom: 1rem;
+    }
+    .seller-table-wrap {
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+    .seller-table thead th { white-space: nowrap; }
+    .seller-table tbody td { white-space: nowrap; }
+
+    /* Seller avatar chip */
+    .seller-chip {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .seller-avatar-sm {
+      width: 28px; height: 28px;
+      border-radius: 50%;
+      background: var(--brand-gradient);
+      display: flex; align-items: center; justify-content: center;
+      color: #fff;
+      font-size: .65rem;
+      font-weight: 700;
+      flex-shrink: 0;
+    }
+    .seller-name-sm { font-weight: 600; font-size: .82rem; color: var(--text-primary); }
+    .seller-role-sm { font-size: .65rem; color: var(--text-muted); }
+
+    /* Conv rate bar inline */
+    .conv-bar-wrap { display: flex; align-items: center; gap: 6px; min-width: 100px; }
+    .conv-bar {
+      flex: 1;
+      height: 6px;
+      background: var(--border);
+      border-radius: var(--radius-full);
+      overflow: hidden;
+    }
+    .conv-bar-fill {
+      height: 100%;
+      border-radius: var(--radius-full);
+      transition: width .6s ease;
+    }
+    .conv-bar-label { font-size: .72rem; font-weight: 700; min-width: 36px; text-align: right; }
+
+    /* Rank badge */
+    .rank-badge {
+      width: 22px; height: 22px;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: .65rem;
+      font-weight: 800;
+      flex-shrink: 0;
+    }
+    .rank-1 { background: #fbbf24; color: #78350f; }
+    .rank-2 { background: #94a3b8; color: #1e293b; }
+    .rank-3 { background: #cd7c3a; color: #fff; }
+    .rank-n { background: var(--bg-input); color: var(--text-muted); }
+
+    /* ── Responsive ──────────────────────────────────────── */
+    @media (max-width: 1400px) {
+      .kpi-main-grid  { grid-template-columns: repeat(3, 1fr); }
+      .pipeline-row   { grid-template-columns: repeat(3, 1fr); }
+    }
+    @media (max-width: 1100px) {
+      .charts-row-1   { grid-template-columns: 1fr; }
+      .charts-row-2   { grid-template-columns: 1fr 1fr; }
+    }
+    @media (max-width: 900px) {
+      .kpi-main-grid  { grid-template-columns: repeat(2, 1fr); }
+      .pipeline-row   { grid-template-columns: repeat(2, 1fr); }
+      .breakdown-row  { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 640px) {
+      .kpi-main-grid  { grid-template-columns: 1fr 1fr; }
+      .pipeline-row   { grid-template-columns: 1fr 1fr; }
+      .charts-row-2   { grid-template-columns: 1fr; }
+      .kpi-main-value { font-size: 1.4rem; }
+      .dash-title     { font-size: 1.3rem; }
+    }
+    @media (max-width: 400px) {
+      .kpi-main-grid  { grid-template-columns: 1fr; }
+      .pipeline-row   { grid-template-columns: 1fr 1fr; }
+    }
+  </style>
+</head>
+<body data-page="dashboard">
+<div class="sidebar-overlay" id="sidebar-overlay"></div>
+<div class="app">
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-logo">
+      <div class="logo-icon"><i class="ph-fill ph-brain"></i></div>
+      <div class="logo-text">Athena CRM <span>Churn Management Suite</span></div>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="nav-section">
+        <span class="nav-label">Principal</span>
+        <ul>
+          <li class="nav-item"><a href="dashboard.html"   class="nav-link active"><i class="ph ph-squares-four"></i> Dashboard</a></li>
+          <li class="nav-item"><a href="actions.html"     class="nav-link"><i class="ph ph-kanban"></i> Ações / Kanban</a></li>
+          <li class="nav-item"><a href="performance.html" class="nav-link"><i class="ph ph-chart-bar"></i> Performance</a></li>
+          <li class="nav-item"><a href="clients.html"     class="nav-link"><i class="ph ph-users"></i> Clientes</a></li>
+        </ul>
+      </div>
+    </nav>
+    <div class="sidebar-footer"><strong>O2 Data</strong><br>&copy; <span id="footer-year"></span> Athena CRM</div>
+  </aside>
+
+  <div class="main">
+    <header class="header">
+      <button class="icon-btn" id="sidebar-toggle" style="display:none"><i class="ph ph-list"></i></button>
+      <div class="header-search-wrap">
+        <div class="header-search">
+          <i class="ph ph-magnifying-glass"></i>
+          <input type="text" id="global-search" placeholder="Buscar clientes ou cards..." autocomplete="off">
+        </div>
+        <div id="global-search-results" class="global-search-dropdown" hidden></div>
+      </div>
+      <div class="header-actions">
+        <button class="icon-btn" id="theme-btn"><i class="ph ph-moon" id="theme-icon"></i></button>
+        <button class="icon-btn"><i class="ph ph-bell"></i><span class="notif-dot"></span></button>
+        <div class="user-chip">
+          <div class="avatar">AD</div>
+          <div><div class="user-name">Admin</div><div class="user-role">Gestor</div></div>
+        </div>
+      </div>
+    </header>
+
+    <div class="content animate-fade">
+
+      <!-- ── Page Header ──────────────────────────────────── -->
+      <div class="dash-header">
+        <div class="dash-header-left">
+          <h1 class="dash-title">Dashboard</h1>
+          <div class="dash-subtitle">
+            <span class="live-dot"></span>
+            Indicadores de churn em tempo real · Ciclo <strong id="dash-cycle">—</strong>
+          </div>
+        </div>
+        <div class="dash-filters">
+          <select class="form-control" id="filter-branch"></select>
+          <select class="form-control" id="filter-state"></select>
+          <select class="form-control" id="filter-seller"></select>
+          <button class="btn btn-primary btn-sm" id="btn-refresh" onclick="dashboardPage.refresh()">
+            <i class="ph ph-arrows-clockwise"></i> Atualizar
+          </button>
+          <button class="btn btn-cycle-close btn-sm" id="btn-close-cycle" onclick="cycleCloseModal.open()">
+            <i class="ph ph-flag-checkered"></i> Fechar Ciclo
+          </button>
+        </div>
+      </div>
+
+      <!-- ── KPI Row 1 — Main Metrics ─────────────────────── -->
+      <div class="kpi-main-grid stagger">
+
+        <div class="kpi-main-card purple animate-fade">
+          <div class="kpi-main-top">
+            <span class="kpi-main-label">Total de Cards</span>
+            <div class="kpi-main-icon purple"><i class="ph-fill ph-kanban"></i></div>
+          </div>
+          <div class="kpi-main-value" id="kpi-total-cards">—</div>
+          <div class="kpi-main-footer neutral">
+            <i class="ph ph-stack"></i> Cards no pipeline ativo
+          </div>
+        </div>
+
+        <div class="kpi-main-card red animate-fade">
+          <div class="kpi-main-top">
+            <span class="kpi-main-label">Clientes em Risco</span>
+            <div class="kpi-main-icon red"><i class="ph-fill ph-warning-circle"></i></div>
+          </div>
+          <div class="kpi-main-value" id="kpi-at-risk">—</div>
+          <div class="kpi-main-footer down">
+            <i class="ph ph-warning"></i> Score de churn ≥ 60
+          </div>
+        </div>
+
+        <div class="kpi-main-card orange animate-fade">
+          <div class="kpi-main-top">
+            <span class="kpi-main-label">Valor em Risco</span>
+            <div class="kpi-main-icon orange"><i class="ph-fill ph-currency-dollar"></i></div>
+          </div>
+          <div class="kpi-main-value kpi-main-value--sm" id="kpi-value-risk">—</div>
+          <div class="kpi-main-footer warn">
+            <i class="ph ph-fire"></i> Exposição financeira total
+          </div>
+        </div>
+
+        <div class="kpi-main-card blue animate-fade">
+          <div class="kpi-main-top">
+            <span class="kpi-main-label">Ticket Médio</span>
+            <div class="kpi-main-icon blue"><i class="ph-fill ph-receipt"></i></div>
+          </div>
+          <div class="kpi-main-value kpi-main-value--sm" id="kpi-avg-ticket">—</div>
+          <div class="kpi-main-footer neutral">
+            <i class="ph ph-minus"></i> Clientes em risco
+          </div>
+        </div>
+
+        <div class="kpi-main-card green animate-fade">
+          <div class="kpi-main-top">
+            <span class="kpi-main-label">Convertidos</span>
+            <div class="kpi-main-icon green"><i class="ph-fill ph-check-circle"></i></div>
+          </div>
+          <div class="kpi-main-value" id="kpi-converted-main">—</div>
+          <div class="kpi-main-footer up">
+            <i class="ph ph-trend-up"></i> Taxa: <span id="kpi-conv-rate">—</span>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- ── KPI Row 2 — Pipeline Stages ──────────────────── -->
+      <div class="pipeline-row stagger">
+        <div class="pipeline-card animate-fade">
+          <div class="pipeline-dot" style="background:#94a3b8"></div>
+          <div class="pipeline-info">
+            <div class="pipeline-label">Backlog</div>
+            <div class="pipeline-value" style="color:var(--text-secondary)" id="kpi-backlog">—</div>
+          </div>
+          <span class="pipeline-pct" style="background:rgba(148,163,184,.15);color:#94a3b8" id="pct-backlog">—</span>
+        </div>
+        <div class="pipeline-card animate-fade">
+          <div class="pipeline-dot" style="background:var(--info)"></div>
+          <div class="pipeline-info">
+            <div class="pipeline-label">Em Andamento</div>
+            <div class="pipeline-value" style="color:var(--info)" id="kpi-in-progress">—</div>
+          </div>
+          <span class="pipeline-pct" style="background:var(--info-bg);color:var(--info)" id="pct-in-progress">—</span>
+        </div>
+        <div class="pipeline-card animate-fade">
+          <div class="pipeline-dot" style="background:var(--warning)"></div>
+          <div class="pipeline-info">
+            <div class="pipeline-label">Em Negociação</div>
+            <div class="pipeline-value" style="color:var(--warning)" id="kpi-in-neg">—</div>
+          </div>
+          <span class="pipeline-pct" style="background:var(--warning-bg);color:var(--warning)" id="pct-in-neg">—</span>
+        </div>
+        <div class="pipeline-card animate-fade">
+          <div class="pipeline-dot" style="background:var(--success)"></div>
+          <div class="pipeline-info">
+            <div class="pipeline-label">Convertido</div>
+            <div class="pipeline-value" style="color:var(--success)" id="kpi-converted">—</div>
+          </div>
+          <span class="pipeline-pct" style="background:var(--success-bg);color:var(--success)" id="pct-converted">—</span>
+        </div>
+        <div class="pipeline-card animate-fade">
+          <div class="pipeline-dot" style="background:var(--danger)"></div>
+          <div class="pipeline-info">
+            <div class="pipeline-label">Declinado</div>
+            <div class="pipeline-value" style="color:var(--danger)" id="kpi-declined">—</div>
+          </div>
+          <span class="pipeline-pct" style="background:var(--danger-bg);color:var(--danger)" id="pct-declined">—</span>
+        </div>
+      </div>
+
+      <!-- ── Charts Row 1 — Main charts ───────────────────── -->
+      <div class="charts-row-1">
+
+        <!-- Distribuição de Valor por Estágio (bar) -->
+        <div class="sc">
+          <div class="sc-header">
+            <span class="sc-title"><i class="ph ph-chart-bar"></i> Valor em Risco por Estágio</span>
+            <span class="badge badge-orange"><i class="ph ph-currency-dollar"></i> Exposição atual</span>
+          </div>
+          <div class="sc-body">
+            <div class="chart-wrap" style="height:240px"><canvas id="chart-value-stage"></canvas></div>
+          </div>
+        </div>
+
+        <!-- Distribuição de Cards por Estágio (doughnut) -->
+        <div class="sc">
+          <div class="sc-header">
+            <span class="sc-title"><i class="ph ph-chart-donut"></i> Pipeline de Cards</span>
+          </div>
+          <div class="sc-body">
+            <div class="chart-wrap" style="height:240px"><canvas id="chart-stages"></canvas></div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- ── Charts Row 2 — Secondary charts ──────────────── -->
+      <div class="charts-row-2">
+
+        <!-- Cards por Filial (horizontal bar) -->
+        <div class="sc">
+          <div class="sc-header">
+            <span class="sc-title"><i class="ph ph-buildings"></i> Cards por Filial</span>
+          </div>
+          <div class="sc-body">
+            <div class="chart-wrap" style="height:180px"><canvas id="chart-branch-cards"></canvas></div>
+          </div>
+        </div>
+
+        <!-- Valor em Risco por Filial (bar) -->
+        <div class="sc">
+          <div class="sc-header">
+            <span class="sc-title"><i class="ph ph-fire"></i> Risco por Filial</span>
+          </div>
+          <div class="sc-body">
+            <div class="chart-wrap" style="height:180px"><canvas id="chart-branch-risk"></canvas></div>
+          </div>
+        </div>
+
+        <!-- Conversão por Filial (bar) -->
+        <div class="sc">
+          <div class="sc-header">
+            <span class="sc-title"><i class="ph ph-check-fat"></i> Conversão por Filial</span>
+          </div>
+          <div class="sc-body">
+            <div class="chart-wrap" style="height:180px"><canvas id="chart-branch-conv"></canvas></div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- ── Breakdown Tables ──────────────────────────────── -->
+      <div class="breakdown-row">
+
+        <!-- Por Filial -->
+        <div class="sc">
+          <div class="sc-header">
+            <span class="sc-title"><i class="ph ph-buildings"></i> Breakdown por Filial</span>
+            <span class="badge badge-purple" id="branch-total-badge">—</span>
+          </div>
+          <div class="sc-body-flush">
+            <table class="bk-table" id="breakdown-branch-table">
+              <thead>
+                <tr>
+                  <th data-col="_key">Filial <i class="ph ph-arrows-down-up sort-icon" style="font-size:.7rem;opacity:.4;margin-left:4px"></i></th>
+                  <th data-col="total_cards">Cards <i class="ph ph-arrows-down-up sort-icon" style="font-size:.7rem;opacity:.4;margin-left:4px"></i></th>
+                  <th data-col="total_value_at_risk">Valor em Risco <i class="ph ph-arrows-down-up sort-icon" style="font-size:.7rem;opacity:.4;margin-left:4px"></i></th>
+                  <th data-col="_conv">Conv. <i class="ph ph-arrows-down-up sort-icon" style="font-size:.7rem;opacity:.4;margin-left:4px"></i></th>
+                  <th>Cobertura</th>
+                </tr>
+              </thead>
+              <tbody id="breakdown-branch"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Por Estado -->
+        <div class="sc">
+          <div class="sc-header">
+            <span class="sc-title"><i class="ph ph-map-pin"></i> Breakdown por Estado</span>
+            <span class="badge badge-blue" id="state-total-badge">—</span>
+          </div>
+          <div class="sc-body-flush">
+            <table class="bk-table" id="breakdown-state-table">
+              <thead>
+                <tr>
+                  <th data-col="_key">Estado <i class="ph ph-arrows-down-up sort-icon" style="font-size:.7rem;opacity:.4;margin-left:4px"></i></th>
+                  <th data-col="total_cards">Cards <i class="ph ph-arrows-down-up sort-icon" style="font-size:.7rem;opacity:.4;margin-left:4px"></i></th>
+                  <th data-col="total_value_at_risk">Valor em Risco <i class="ph ph-arrows-down-up sort-icon" style="font-size:.7rem;opacity:.4;margin-left:4px"></i></th>
+                  <th data-col="_conv">Conv. <i class="ph ph-arrows-down-up sort-icon" style="font-size:.7rem;opacity:.4;margin-left:4px"></i></th>
+                  <th>Cobertura</th>
+                </tr>
+              </thead>
+              <tbody id="breakdown-state"></tbody>
+            </table>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- ── Seller Tables ────────────────────────────────── -->
+      <div class="seller-tables-row">
+
+        <!-- Ciclo Atual por Vendedor -->
+        <div class="sc">
+          <div class="sc-header">
+            <span class="sc-title"><i class="ph ph-user-circle"></i> Vendedores — Ciclo Atual</span>
+            <span class="badge badge-purple" id="seller-cycle-badge">—</span>
+          </div>
+          <div class="sc-body-flush">
+            <div class="seller-table-wrap">
+              <table class="bk-table seller-table" id="seller-cycle-table">
+                <thead>
+                  <tr>
+                    <th data-col="seller_name">Vendedor <i class="ph ph-arrows-down-up sort-icon" style="font-size:.7rem;opacity:.4;margin-left:4px"></i></th>
+                    <th data-col="branch">Filial <i class="ph ph-arrows-down-up sort-icon" style="font-size:.7rem;opacity:.4;margin-left:4px"></i></th>
+                    <th data-col="total_cards">Cards <i class="ph ph-arrows-down-up sort-icon" style="font-size:.7rem;opacity:.4;margin-left:4px"></i></th>
+                    <th data-col="backlog">Backlog <i class="ph ph-arrows-down-up sort-icon" style="font-size:.7rem;opacity:.4;margin-left:4px"></i></th>
+                    <th data-col="in_progress">Andamento <i class="ph ph-arrows-down-up sort-icon" style="font-size:.7rem;opacity:.4;margin-left:4px"></i></th>
+                    <th data-col="in_negotiation">Negociação <i class="ph ph-arrows-down-up sort-icon" style="font-size:.7rem;opacity:.4;margin-left:4px"></i></th>
+                    <th data-col="converted">Convertido <i class="ph ph-arrows-down-up sort-icon" style="font-size:.7rem;opacity:.4;margin-left:4px"></i></th>
+                    <th data-col="declined">Declinado <i class="ph ph-arrows-down-up sort-icon" style="font-size:.7rem;opacity:.4;margin-left:4px"></i></th>
+                    <th data-col="total_actions">Ações <i class="ph ph-arrows-down-up sort-icon" style="font-size:.7rem;opacity:.4;margin-left:4px"></i></th>
+                    <th data-col="conversion_rate">Conv. % <i class="ph ph-arrows-down-up sort-icon" style="font-size:.7rem;opacity:.4;margin-left:4px"></i></th>
+                  </tr>
+                </thead>
+                <tbody id="seller-cycle-tbody"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Performance Histórica por Vendedor -->
+      <div class="sc" style="margin-bottom:1rem">
+        <div class="sc-header">
+          <span class="sc-title"><i class="ph ph-chart-bar"></i> Performance Histórica por Vendedor</span>
+          <div style="display:flex;gap:.5rem;align-items:center">
+            <span class="badge badge-blue" id="seller-hist-badge">—</span>
+            <button class="btn btn-secondary btn-sm" id="btn-sort-conv" onclick="dashboardPage.sortSellers('conv')">
+              <i class="ph ph-sort-descending"></i> Conv.
+            </button>
+            <button class="btn btn-secondary btn-sm" id="btn-sort-cards" onclick="dashboardPage.sortSellers('cards')">
+              <i class="ph ph-sort-descending"></i> Cards
+            </button>
+          </div>
+        </div>
+        <div class="sc-body-flush">
+          <div class="seller-table-wrap">
+            <table class="bk-table seller-table" id="seller-hist-table">
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th data-col="seller_name">Vendedor <i class="ph ph-arrows-down-up sort-icon" style="font-size:.7rem;opacity:.4;margin-left:4px"></i></th>
+                  <th data-col="branch">Filial <i class="ph ph-arrows-down-up sort-icon" style="font-size:.7rem;opacity:.4;margin-left:4px"></i></th>
+                  <th data-col="total_cards">Total Cards <i class="ph ph-arrows-down-up sort-icon" style="font-size:.7rem;opacity:.4;margin-left:4px"></i></th>
+                  <th data-col="converted">Convertidos <i class="ph ph-arrows-down-up sort-icon" style="font-size:.7rem;opacity:.4;margin-left:4px"></i></th>
+                  <th data-col="declined">Declinados <i class="ph ph-arrows-down-up sort-icon" style="font-size:.7rem;opacity:.4;margin-left:4px"></i></th>
+                  <th data-col="in_progress">Em Andamento <i class="ph ph-arrows-down-up sort-icon" style="font-size:.7rem;opacity:.4;margin-left:4px"></i></th>
+                  <th data-col="total_actions">Ações Reg. <i class="ph ph-arrows-down-up sort-icon" style="font-size:.7rem;opacity:.4;margin-left:4px"></i></th>
+                  <th data-col="conversion_rate">Taxa Conv. <i class="ph ph-arrows-down-up sort-icon" style="font-size:.7rem;opacity:.4;margin-left:4px"></i></th>
+                  <th data-col="_perf">Performance <i class="ph ph-arrows-down-up sort-icon" style="font-size:.7rem;opacity:.4;margin-left:4px"></i></th>
+                </tr>
+              </thead>
+              <tbody id="seller-hist-tbody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /content -->
+
+    <footer class="footer">
+      <div class="footer-brand"><i class="ph-fill ph-brain"></i> Athena CRM</div>
+      <span>Churn Management Suite — Desenvolvido pela <strong>O2 Data</strong></span>
+      <span>&copy; <span id="footer-year"></span></span>
+    </footer>
+  </div>
+</div>
+
+<!-- Modal: Fechar Ciclo -->
+<div class="modal-overlay" id="modal-close-cycle">
+  <div class="modal animate-scale" style="max-width:460px">
+
+    <div style="height:4px;border-radius:var(--radius-xl) var(--radius-xl) 0 0;margin:-1.75rem -1.75rem 1.5rem;background:linear-gradient(90deg,#ef4444,#f87171)"></div>
+
+    <div class="modal-header" style="margin-bottom:1.25rem">
+      <span class="modal-title">
+        <i class="ph-fill ph-flag-checkered" style="color:var(--danger)"></i>
+        Fechar Ciclo Atual
+      </span>
+      <button class="icon-btn" onclick="cycleCloseModal.close()"><i class="ph ph-x"></i></button>
+    </div>
+
+    <!-- Warning -->
+    <div class="cycle-modal-warning">
+      <i class="ph-fill ph-warning-circle"></i>
+      <div class="cycle-modal-warning-text">
+        <strong>Ação irreversível</strong>
+        Todos os cards ativos do Kanban serão arquivados e o ciclo será encerrado.
+        Históricos, métricas e ações registradas são preservados.
+        O Kanban ficará vazio para o próximo ciclo.
+      </div>
+    </div>
+
+    <!-- Cycle ID -->
+    <div class="form-group">
+      <label class="form-label">Ciclo a fechar</label>
+      <input id="cycle-close-id" class="form-control" placeholder="Ex: 2026-04"
+        style="font-family:monospace;font-weight:600">
+      <div style="font-size:.7rem;color:var(--text-muted);margin-top:.3rem">
+        Deixe em branco para usar o mês atual automaticamente.
+      </div>
+    </div>
+
+    <!-- Password -->
+    <div class="form-group">
+      <label class="form-label">
+        Senha de confirmação
+        <span style="font-size:.68rem;color:var(--text-muted);font-weight:400">
+          — definida em <code style="background:var(--bg-input);padding:1px 5px;border-radius:3px">config.yaml</code>
+        </span>
+      </label>
+      <div style="position:relative">
+        <i class="ph ph-lock" style="position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--text-muted);pointer-events:none"></i>
+        <input id="cycle-close-password" type="password" class="form-control"
+          style="padding-left:32px" placeholder="••••••" autocomplete="off">
+      </div>
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="cycleCloseModal.close()">
+        <i class="ph ph-x"></i> Cancelar
+      </button>
+      <button class="btn btn-cycle-close" id="btn-cycle-close-confirm" onclick="cycleCloseModal.confirm()">
+        <i class="ph ph-flag-checkered"></i> Confirmar Fechamento
+      </button>
+    </div>
+  </div>
+</div>
+
+<script src="../assets/js/core/api.js?v=2"></script>
+<script src="../assets/js/core/state.js"></script>
+<script src="../assets/js/core/theme.js"></script>
+<script src="../assets/js/core/utils.js"></script>
+<script src="../assets/js/core/router.js"></script>
+<script src="../assets/js/core/auth.js"></script>
+<script src="../assets/js/components/toast.js"></script>
+<script src="../assets/js/components/modal.js"></script>
+<script src="../assets/js/components/sidebar.js"></script>
+<script src="../assets/js/components/header.js"></script>
+<script src="../assets/js/components/footer.js"></script>
+<script src="../assets/js/components/charts.js"></script>
+<script src="../assets/js/components/kanban.js"></script>
+<script src="../assets/js/components/card.js"></script>
+<script src="../assets/js/components/table.js"></script>
+<script src="../assets/js/components/search.js"></script>
+<script src="../assets/js/pages/dashboard.js"></script>
+<script src="../assets/js/app.js"></script>
+
+<script>
+/* ── Cycle Close Modal ─────────────────────────────────────── */
+const cycleCloseModal = {
+  open() {
+    // Pre-fill current cycle
+    const now = new Date();
+    const cycleId = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+    const inp = document.getElementById('cycle-close-id');
+    if (inp) inp.value = cycleId;
+    const pwd = document.getElementById('cycle-close-password');
+    if (pwd) pwd.value = '';
+
+    document.getElementById('modal-close-cycle')?.classList.add('open');
+    setTimeout(() => pwd?.focus(), 120);
+  },
+
+  close() {
+    document.getElementById('modal-close-cycle')?.classList.remove('open');
+  },
+
+  async confirm() {
+    const password = document.getElementById('cycle-close-password')?.value?.trim();
+    const cycleId  = document.getElementById('cycle-close-id')?.value?.trim() || null;
+
+    if (!password) {
+      document.getElementById('cycle-close-password')?.classList.add('input-error');
+      setTimeout(() => document.getElementById('cycle-close-password')?.classList.remove('input-error'), 1000);
+      toast.error('Informe a senha de confirmação');
+      return;
+    }
+
+    const btn = document.getElementById('btn-cycle-close-confirm');
+    if (btn) { btn.disabled = true; btn.innerHTML = '<i class="ph ph-spinner animate-spin"></i> Fechando ciclo...'; }
+
+    try {
+      const result = await api.closeCycle(password, cycleId);
+      this.close();
+
+      // Success toast with summary
+      toast.success(`✓ Ciclo ${result.cycle_id} fechado — ${result.archived} card(s) arquivado(s), ${result.clients_reset} cliente(s) resetado(s)`);
+
+      // Refresh dashboard
+      await dashboardPage.refresh();
+
+    } catch (err) {
+      const msg = err.message || 'Erro ao fechar ciclo';
+      if (msg.toLowerCase().includes('senha') || msg.toLowerCase().includes('401') || msg.toLowerCase().includes('unauthorized')) {
+        toast.error('Senha incorreta');
+        const pwd = document.getElementById('cycle-close-password');
+        if (pwd) { pwd.value = ''; pwd.focus(); pwd.classList.add('input-error'); setTimeout(() => pwd.classList.remove('input-error'), 1000); }
+      } else {
+        toast.error(msg);
+      }
+    } finally {
+      if (btn) { btn.disabled = false; btn.innerHTML = '<i class="ph ph-flag-checkered"></i> Confirmar Fechamento'; }
+    }
+  },
+};
+
+// Enter key confirms, Escape cancels
+document.getElementById('cycle-close-password')?.addEventListener('keydown', e => {
+  if (e.key === 'Enter')  cycleCloseModal.confirm();
+  if (e.key === 'Escape') cycleCloseModal.close();
+});
+document.getElementById('modal-close-cycle')?.addEventListener('click', e => {
+  if (e.target.id === 'modal-close-cycle') cycleCloseModal.close();
+});
+
+window.cycleCloseModal = cycleCloseModal;
+</script>
+</body>
+</html>

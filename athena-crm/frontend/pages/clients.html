@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script>(function(){try{var t=localStorage.getItem('athena-theme');if(t==='dark')document.documentElement.classList.add('dark');}catch(e){}})();</script>
+  <title>Clientes — Athena CRM</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/@phosphor-icons/web"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <link rel="stylesheet" href="../assets/css/variables.css">
+  <link rel="stylesheet" href="../assets/css/reset.css">
+  <link rel="stylesheet" href="../assets/css/layout.css">
+  <link rel="stylesheet" href="../assets/css/components.css">
+  <link rel="stylesheet" href="../assets/css/animations.css">
+  <link rel="stylesheet" href="../assets/css/dark-theme.css">
+  <link rel="stylesheet" href="../assets/css/responsive.css">
+</head>
+<body data-page="clients">
+
+<div class="sidebar-overlay" id="sidebar-overlay"></div>
+
+<div class="app">
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-logo">
+      <div class="logo-icon"><i class="ph-fill ph-brain"></i></div>
+      <div class="logo-text">Athena CRM <span>Churn Management Suite</span></div>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="nav-section">
+        <span class="nav-label">Principal</span>
+        <ul>
+          <li class="nav-item"><a href="dashboard.html"   class="nav-link"><i class="ph ph-squares-four"></i> Dashboard</a></li>
+          <li class="nav-item"><a href="actions.html"     class="nav-link"><i class="ph ph-kanban"></i> Ações / Kanban</a></li>
+          <li class="nav-item"><a href="performance.html" class="nav-link"><i class="ph ph-chart-bar"></i> Performance</a></li>
+          <li class="nav-item"><a href="clients.html"     class="nav-link active"><i class="ph ph-users"></i> Clientes</a></li>
+        </ul>
+      </div>
+    </nav>
+    <div class="sidebar-footer">
+      <strong>O2 Data</strong><br>
+      &copy; <span id="footer-year"></span> Athena CRM
+    </div>
+  </aside>
+
+  <div class="main">
+    <header class="header">
+      <button class="icon-btn" id="sidebar-toggle" style="display:none" aria-label="Menu">
+        <i class="ph ph-list"></i>
+      </button>
+      <div class="header-search-wrap">
+        <div class="header-search">
+          <i class="ph ph-magnifying-glass"></i>
+          <input type="text" id="global-search" placeholder="Buscar clientes ou cards..." autocomplete="off">
+        </div>
+        <div id="global-search-results" class="global-search-dropdown" hidden></div>
+      </div>
+      <div class="header-actions">
+        <button class="icon-btn" id="theme-btn" title="Alternar tema">
+          <i class="ph ph-moon" id="theme-icon"></i>
+        </button>
+        <button class="icon-btn" title="Notificações">
+          <i class="ph ph-bell"></i>
+          <span class="notif-dot"></span>
+        </button>
+        <div class="user-chip">
+          <div class="avatar">AD</div>
+          <div>
+            <div class="user-name">Admin</div>
+            <div class="user-role">Gestor</div>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <div class="content animate-fade">
+      <div class="page-header">
+        <div>
+          <h1 class="page-title">Clientes</h1>
+          <p class="page-subtitle">Pesquise por nome ou ID externo</p>
+        </div>
+      </div>
+
+      <div class="section-card">
+        <div class="section-card-header">
+          <div class="header-search" style="max-width:360px;flex:1;border-radius:var(--radius-sm)">
+            <i class="ph ph-magnifying-glass"></i>
+            <input type="text" id="client-search" placeholder="Buscar por nome ou ID...">
+          </div>
+          <span class="badge badge-purple" id="clients-count">0 clientes</span>
+        </div>
+        <div class="table-wrap">
+          <table id="clients-main-table">
+            <thead>
+              <tr>
+                <th data-col="name">Nome <i class="ph ph-arrows-down-up sort-icon" style="font-size:.7rem;opacity:.4;margin-left:4px"></i></th>
+                <th>ID Externo</th>
+                <th data-col="ltv">LTV <i class="ph ph-arrows-down-up sort-icon" style="font-size:.7rem;opacity:.4;margin-left:4px"></i></th>
+                <th data-col="avg_ticket">Ticket Médio <i class="ph ph-arrows-down-up sort-icon" style="font-size:.7rem;opacity:.4;margin-left:4px"></i></th>
+                <th data-col="last_purchase_date">Última Compra <i class="ph ph-arrows-down-up sort-icon" style="font-size:.7rem;opacity:.4;margin-left:4px"></i></th>
+                <th data-col="churn_risk_score">Score Churn <i class="ph ph-arrows-down-up sort-icon" style="font-size:.7rem;opacity:.4;margin-left:4px"></i></th>
+                <th data-col="is_at_risk">Status <i class="ph ph-arrows-down-up sort-icon" style="font-size:.7rem;opacity:.4;margin-left:4px"></i></th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="clients-table-body"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <footer class="footer">
+      <div class="footer-brand"><i class="ph-fill ph-brain"></i> Athena CRM</div>
+      <span>Churn Management Suite — Desenvolvido pela <strong>O2 Data</strong></span>
+      <span>&copy; <span id="footer-year"></span></span>
+    </footer>
+  </div>
+</div>
+
+<script src="../assets/js/core/api.js"></script>
+<script src="../assets/js/core/state.js"></script>
+<script src="../assets/js/core/theme.js"></script>
+<script src="../assets/js/core/utils.js"></script>
+<script src="../assets/js/core/router.js"></script>
+<script src="../assets/js/core/auth.js"></script>
+<script src="../assets/js/components/toast.js"></script>
+<script src="../assets/js/components/modal.js"></script>
+<script src="../assets/js/components/sidebar.js"></script>
+<script src="../assets/js/components/header.js"></script>
+<script src="../assets/js/components/footer.js"></script>
+<script src="../assets/js/components/charts.js"></script>
+<script src="../assets/js/components/kanban.js"></script>
+<script src="../assets/js/components/card.js"></script>
+<script src="../assets/js/components/table.js"></script>
+<script src="../assets/js/components/search.js"></script>
+<script src="../assets/js/pages/clients.js"></script>
+<script src="../assets/js/app.js"></script>
+</body>
+</html>

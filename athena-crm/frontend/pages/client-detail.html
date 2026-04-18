@@ -1,0 +1,701 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script>(function(){try{var t=localStorage.getItem('athena-theme');if(t==='dark')document.documentElement.classList.add('dark');}catch(e){}})();</script>
+  <title>Detalhe do Cliente — Athena CRM</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/@phosphor-icons/web"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <link rel="stylesheet" href="../assets/css/variables.css">
+  <link rel="stylesheet" href="../assets/css/reset.css">
+  <link rel="stylesheet" href="../assets/css/layout.css">
+  <link rel="stylesheet" href="../assets/css/components.css">
+  <link rel="stylesheet" href="../assets/css/animations.css">
+  <link rel="stylesheet" href="../assets/css/dark-theme.css">
+  <link rel="stylesheet" href="../assets/css/responsive.css">
+  <style>
+    /* ── Hero profile card ─────────────────────────────────── */
+    .cd-hero {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-xl);
+      padding: 2rem;
+      margin-bottom: 1.75rem;
+      box-shadow: var(--shadow-sm);
+      position: relative;
+      overflow: hidden;
+    }
+    .cd-hero::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 4px;
+      background: var(--brand-gradient);
+    }
+    .cd-hero-top {
+      display: flex;
+      align-items: center;
+      gap: 1.25rem;
+      margin-bottom: 1.5rem;
+      flex-wrap: wrap;
+    }
+    .cd-avatar {
+      width: 64px; height: 64px;
+      border-radius: 50%;
+      background: var(--brand-gradient);
+      display: flex; align-items: center; justify-content: center;
+      color: #fff;
+      font-size: 1.6rem;
+      flex-shrink: 0;
+      box-shadow: var(--shadow-brand);
+    }
+    .cd-identity { flex: 1; min-width: 0; }
+    .cd-name {
+      font-size: 1.4rem;
+      font-weight: 800;
+      letter-spacing: -.02em;
+      color: var(--text-primary);
+      margin-bottom: .35rem;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .cd-meta {
+      display: flex;
+      align-items: center;
+      gap: .625rem;
+      flex-wrap: wrap;
+    }
+    .cd-ext-id {
+      font-size: .72rem;
+      background: var(--bg-input);
+      border: 1px solid var(--border);
+      padding: 2px 10px;
+      border-radius: var(--radius-xs);
+      font-family: 'Courier New', monospace;
+      color: var(--text-secondary);
+    }
+
+    /* KPI strip */
+    .cd-kpis {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 1px;
+      background: var(--border);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      overflow: hidden;
+    }
+    .cd-kpi {
+      background: var(--bg-input);
+      padding: .875rem 1rem;
+      text-align: center;
+      transition: background .15s;
+    }
+    .cd-kpi:hover { background: var(--bg-hover); }
+    .cd-kpi-label {
+      font-size: .62rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .6px;
+      color: var(--text-muted);
+      margin-bottom: 5px;
+    }
+    .cd-kpi-value {
+      font-size: .95rem;
+      font-weight: 700;
+      color: var(--text-primary);
+      line-height: 1.2;
+    }
+
+    /* ── Tab system ────────────────────────────────────────── */
+    .cd-tabs {
+      display: flex;
+      gap: 0;
+      border-bottom: 2px solid var(--border);
+      margin-bottom: 1.5rem;
+      overflow-x: auto;
+      scrollbar-width: none;
+    }
+    .cd-tabs::-webkit-scrollbar { display: none; }
+    .cd-tab {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      padding: .75rem 1.25rem;
+      font-size: .85rem;
+      font-weight: 600;
+      color: var(--text-secondary);
+      border-bottom: 2px solid transparent;
+      margin-bottom: -2px;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: color .15s, border-color .15s;
+      background: none;
+      border-top: none;
+      border-left: none;
+      border-right: none;
+    }
+    .cd-tab i { font-size: 1rem; }
+    .cd-tab:hover { color: var(--brand-primary); }
+    .cd-tab.active {
+      color: var(--brand-primary);
+      border-bottom-color: var(--brand-primary);
+    }
+    .cd-tab .tab-count {
+      background: var(--brand-light);
+      color: var(--brand-primary);
+      font-size: .65rem;
+      font-weight: 700;
+      padding: 1px 7px;
+      border-radius: var(--radius-full);
+      line-height: 1.6;
+    }
+    .cd-tab.active .tab-count {
+      background: var(--brand-primary);
+      color: #fff;
+    }
+
+    .cd-panel { display: none; }
+    .cd-panel.active { display: block; animation: fadeIn .25s ease both; }
+
+    /* ── Cards tab ─────────────────────────────────────────── */
+    .cd-cards-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 1rem;
+    }
+    .cd-card-item {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 1.25rem;
+      cursor: pointer;
+      transition: var(--t-base);
+      position: relative;
+      overflow: hidden;
+    }
+    .cd-card-item::before {
+      content: '';
+      position: absolute;
+      left: 0; top: 0; bottom: 0;
+      width: 3px;
+      background: var(--brand-gradient);
+      opacity: 0;
+      transition: opacity .2s;
+    }
+    .cd-card-item:hover {
+      box-shadow: var(--shadow-md);
+      transform: translateY(-2px);
+      border-color: var(--brand-secondary);
+    }
+    .cd-card-item:hover::before { opacity: 1; }
+    .cd-card-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: .75rem;
+      margin-bottom: .875rem;
+    }
+    .cd-card-title {
+      font-size: .875rem;
+      font-weight: 700;
+      color: var(--text-primary);
+      line-height: 1.35;
+      flex: 1;
+      min-width: 0;
+    }
+    .cd-card-body {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: .4rem .75rem;
+      margin-bottom: .875rem;
+    }
+    .cd-card-stat { font-size: .75rem; color: var(--text-secondary); }
+    .cd-card-stat strong { color: var(--text-primary); font-weight: 600; }
+    .cd-card-stat.danger strong { color: var(--danger); }
+    .cd-card-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding-top: .75rem;
+      border-top: 1px solid var(--border-light);
+      font-size: .72rem;
+      color: var(--text-muted);
+    }
+    .cd-card-risk {
+      font-size: .85rem;
+      font-weight: 800;
+      color: var(--danger);
+    }
+
+    /* ── History tab ───────────────────────────────────────── */
+    .cd-history-layout {
+      display: grid;
+      grid-template-columns: 1fr 360px;
+      gap: 1.5rem;
+      align-items: start;
+    }
+    @media (max-width: 1024px) {
+      .cd-history-layout { grid-template-columns: 1fr; }
+    }
+
+    .cd-timeline { position: relative; }
+    .cd-timeline-item {
+      display: flex;
+      gap: 1rem;
+      padding-bottom: 1.25rem;
+      position: relative;
+    }
+    .cd-timeline-item:not(:last-child)::before {
+      content: '';
+      position: absolute;
+      left: 19px;
+      top: 40px;
+      bottom: 0;
+      width: 2px;
+      background: var(--border);
+    }
+    .cd-timeline-dot {
+      width: 40px; height: 40px;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1rem;
+      flex-shrink: 0;
+      position: relative;
+      z-index: 1;
+      border: 2px solid var(--bg-card);
+    }
+    .cd-timeline-dot.call     { background: var(--info-bg);    color: var(--info); }
+    .cd-timeline-dot.email    { background: var(--brand-light); color: var(--brand-primary); }
+    .cd-timeline-dot.meeting  { background: var(--success-bg);  color: var(--success); }
+    .cd-timeline-dot.whatsapp { background: var(--success-bg);  color: var(--success); }
+    .cd-timeline-dot.note     { background: var(--bg-input);    color: var(--text-muted); }
+    .cd-timeline-dot.proposal { background: var(--warning-bg);  color: var(--warning); }
+    .cd-timeline-dot.card     { background: var(--brand-light); color: var(--brand-primary); }
+
+    .cd-timeline-body {
+      flex: 1;
+      min-width: 0;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: .875rem 1rem;
+      box-shadow: var(--shadow-xs);
+    }
+    .cd-timeline-header {
+      display: flex;
+      align-items: center;
+      gap: .5rem;
+      margin-bottom: .4rem;
+      flex-wrap: wrap;
+    }
+    .cd-timeline-type {
+      font-size: .78rem;
+      font-weight: 700;
+      color: var(--text-primary);
+    }
+    .cd-timeline-time {
+      font-size: .7rem;
+      color: var(--text-muted);
+      margin-left: auto;
+    }
+    .cd-timeline-text {
+      font-size: .83rem;
+      color: var(--text-secondary);
+      line-height: 1.55;
+    }
+
+    /* Register form panel */
+    .cd-register-panel {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-xl);
+      overflow: hidden;
+      box-shadow: var(--shadow-sm);
+      position: sticky;
+      top: calc(var(--header-h) + 1rem);
+    }
+    .cd-register-header {
+      padding: 1.1rem 1.5rem;
+      border-bottom: 1px solid var(--border);
+      background: var(--brand-gradient);
+      display: flex;
+      align-items: center;
+      gap: .625rem;
+    }
+    .cd-register-header-title {
+      font-size: .9rem;
+      font-weight: 700;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      gap: 7px;
+    }
+    .cd-register-body { padding: 1.25rem 1.5rem; }
+
+    /* Type selector pills */
+    .type-pills {
+      display: flex;
+      flex-wrap: wrap;
+      gap: .4rem;
+      margin-bottom: 1rem;
+    }
+    .type-pill {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      padding: 5px 12px;
+      border-radius: var(--radius-full);
+      font-size: .75rem;
+      font-weight: 600;
+      cursor: pointer;
+      border: 1.5px solid var(--border);
+      background: var(--bg-input);
+      color: var(--text-secondary);
+      transition: var(--t-fast);
+    }
+    .type-pill:hover {
+      border-color: var(--brand-primary);
+      color: var(--brand-primary);
+      background: var(--brand-light);
+    }
+    .type-pill.selected {
+      background: var(--brand-gradient);
+      color: #fff;
+      border-color: transparent;
+      box-shadow: 0 3px 10px rgba(124,58,237,.3);
+    }
+    .type-pill i { font-size: .85rem; }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .cd-kpis { grid-template-columns: repeat(3, 1fr); }
+      .cd-cards-grid { grid-template-columns: 1fr; }
+      .cd-register-panel { position: static; }
+    }
+    @media (max-width: 480px) {
+      .cd-kpis { grid-template-columns: repeat(2, 1fr); }
+      .cd-hero { padding: 1.25rem; }
+      .cd-name { font-size: 1.15rem; }
+    }
+
+    /* ── History chips ── */
+    .cd-chips-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: .35rem;
+      margin: .35rem 0 .4rem;
+    }
+    .cd-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-size: .7rem;
+      font-weight: 600;
+      padding: 2px 9px;
+      border-radius: var(--radius-full);
+      border: 1px solid var(--border);
+      background: var(--bg-input);
+      color: var(--text-secondary);
+      white-space: nowrap;
+      max-width: 220px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .cd-chip i { font-size: .75rem; flex-shrink: 0; }
+    .cd-chip--card {
+      background: var(--warning-bg);
+      color: var(--warning);
+      border-color: transparent;
+      cursor: pointer;
+      transition: var(--t-fast);
+    }
+    .cd-chip--card:hover { background: var(--warning); color: #fff; }
+    .cd-chip--seller {
+      background: var(--success-bg);
+      color: var(--success);
+      border-color: transparent;
+    }
+    .cd-chip--cycle {
+      background: var(--brand-light);
+      color: var(--brand-primary);
+      border-color: transparent;
+    }
+
+    /* ── Card result block ── */
+    .cd-result-block {
+      margin-top: .5rem;
+      padding: .5rem .75rem;
+      background: var(--bg-input);
+      border: 1px solid var(--border-light);
+      border-radius: var(--radius-sm);
+      border-left: 3px solid var(--brand-primary);
+    }
+    .cd-result-label {
+      font-size: .6rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .5px;
+      color: var(--text-muted);
+      margin-bottom: .3rem;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .cd-result-label i { color: var(--brand-primary); }
+    .cd-result-body {
+      display: flex;
+      align-items: center;
+      gap: .4rem;
+      flex-wrap: wrap;
+    }
+    .cd-result-note {
+      font-size: .65rem;
+      color: var(--text-muted);
+      margin-left: auto;
+      white-space: nowrap;
+    }
+  </style>
+</head>
+<body data-page="client-detail">
+
+<div class="sidebar-overlay" id="sidebar-overlay"></div>
+
+<div class="app">
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-logo">
+      <div class="logo-icon"><i class="ph-fill ph-brain"></i></div>
+      <div class="logo-text">Athena CRM <span>Churn Management Suite</span></div>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="nav-section">
+        <span class="nav-label">Principal</span>
+        <ul>
+          <li class="nav-item"><a href="dashboard.html"   class="nav-link"><i class="ph ph-squares-four"></i> Dashboard</a></li>
+          <li class="nav-item"><a href="actions.html"     class="nav-link"><i class="ph ph-kanban"></i> Ações / Kanban</a></li>
+          <li class="nav-item"><a href="performance.html" class="nav-link"><i class="ph ph-chart-bar"></i> Performance</a></li>
+          <li class="nav-item"><a href="clients.html"     class="nav-link active"><i class="ph ph-users"></i> Clientes</a></li>
+        </ul>
+      </div>
+    </nav>
+    <div class="sidebar-footer">
+      <strong>O2 Data</strong><br>
+      &copy; <span id="footer-year"></span> Athena CRM
+    </div>
+  </aside>
+
+  <div class="main">
+    <header class="header">
+      <button class="icon-btn" id="sidebar-toggle" style="display:none" aria-label="Menu">
+        <i class="ph ph-list"></i>
+      </button>
+      <div class="header-search-wrap">
+        <div class="header-search">
+          <i class="ph ph-magnifying-glass"></i>
+          <input type="text" id="global-search" placeholder="Buscar clientes ou cards..." autocomplete="off">
+        </div>
+        <div id="global-search-results" class="global-search-dropdown" hidden></div>
+      </div>
+      <div class="header-actions">
+        <button class="icon-btn" id="theme-btn" title="Alternar tema">
+          <i class="ph ph-moon" id="theme-icon"></i>
+        </button>
+        <button class="icon-btn" title="Notificações">
+          <i class="ph ph-bell"></i>
+          <span class="notif-dot"></span>
+        </button>
+        <div class="user-chip">
+          <div class="avatar">AD</div>
+          <div>
+            <div class="user-name">Admin</div>
+            <div class="user-role">Gestor</div>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <div class="content animate-fade">
+
+      <!-- Back button -->
+      <a href="clients.html" class="btn btn-secondary btn-sm" style="margin-bottom:1.5rem;display:inline-flex;gap:6px">
+        <i class="ph ph-arrow-left"></i> Voltar para Clientes
+      </a>
+
+      <!-- ── Hero Profile Card ─────────────────────────────── -->
+      <div class="cd-hero">
+        <div class="cd-hero-top">
+          <div class="cd-avatar"><i class="ph-fill ph-buildings"></i></div>
+          <div class="cd-identity">
+            <div class="cd-name" id="client-name">Carregando...</div>
+            <div class="cd-meta">
+              <span class="cd-ext-id" id="client-external-id">—</span>
+              <span id="client-risk-badge"></span>
+              <span id="client-branch-badge"></span>
+              <span id="client-state-badge"></span>
+            </div>
+          </div>
+        </div>
+
+        <!-- KPI strip -->
+        <div class="cd-kpis">
+          <div class="cd-kpi">
+            <div class="cd-kpi-label">LTV</div>
+            <div class="cd-kpi-value" id="client-ltv">—</div>
+          </div>
+          <div class="cd-kpi">
+            <div class="cd-kpi-label">Ticket Médio</div>
+            <div class="cd-kpi-value" id="client-ticket">—</div>
+          </div>
+          <div class="cd-kpi">
+            <div class="cd-kpi-label">Última Compra</div>
+            <div class="cd-kpi-value" id="client-last-purchase">—</div>
+          </div>
+          <div class="cd-kpi">
+            <div class="cd-kpi-label">Score Churn</div>
+            <div class="cd-kpi-value" id="client-risk-score">—</div>
+          </div>
+          <div class="cd-kpi">
+            <div class="cd-kpi-label">Cards Ativos</div>
+            <div class="cd-kpi-value" id="client-cards-count">—</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── Tab Bar ───────────────────────────────────────── -->
+      <div class="cd-tabs" id="cd-tabs">
+        <button class="cd-tab active" data-tab="cards">
+          <i class="ph ph-kanban"></i>
+          Histórico de Cards
+          <span class="tab-count" id="tab-count-cards">0</span>
+        </button>
+        <button class="cd-tab" data-tab="history">
+          <i class="ph ph-clock-counter-clockwise"></i>
+          Histórico de Interações
+          <span class="tab-count" id="tab-count-history">0</span>
+        </button>
+      </div>
+
+      <!-- ── Panel: Cards ──────────────────────────────────── -->
+      <div class="cd-panel active" id="panel-cards">
+        <div id="client-cards-list" class="cd-cards-grid">
+          <!-- skeleton -->
+          <div class="cd-card-item skeleton" style="height:140px"></div>
+          <div class="cd-card-item skeleton" style="height:140px"></div>
+          <div class="cd-card-item skeleton" style="height:140px"></div>
+        </div>
+      </div>
+
+      <!-- ── Panel: History ────────────────────────────────── -->
+      <div class="cd-panel" id="panel-history">
+        <div class="cd-history-layout">
+
+          <!-- Timeline -->
+          <div>
+            <div id="client-history-list" class="cd-timeline">
+              <!-- skeleton -->
+              <div class="cd-timeline-item">
+                <div class="cd-timeline-dot skeleton" style="width:40px;height:40px"></div>
+                <div class="cd-timeline-body skeleton" style="height:72px"></div>
+              </div>
+              <div class="cd-timeline-item">
+                <div class="cd-timeline-dot skeleton" style="width:40px;height:40px"></div>
+                <div class="cd-timeline-body skeleton" style="height:72px"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Register form -->
+          <div>
+            <div class="cd-register-panel">
+              <div class="cd-register-header">
+                <div class="cd-register-header-title">
+                  <i class="ph ph-plus-circle"></i>
+                  Registrar Interação
+                </div>
+              </div>
+              <div class="cd-register-body">
+                <form id="form-add-history">
+
+                  <!-- Type pills -->
+                  <div class="form-group">
+                    <label class="form-label">Tipo de Interação</label>
+                    <div class="type-pills" id="type-pills">
+                      <button type="button" class="type-pill selected" data-value="call">
+                        <i class="ph ph-phone"></i> Ligação
+                      </button>
+                      <button type="button" class="type-pill" data-value="email">
+                        <i class="ph ph-envelope"></i> E-mail
+                      </button>
+                      <button type="button" class="type-pill" data-value="meeting">
+                        <i class="ph ph-users"></i> Reunião
+                      </button>
+                      <button type="button" class="type-pill" data-value="whatsapp">
+                        <i class="ph ph-whatsapp-logo"></i> WhatsApp
+                      </button>
+                      <button type="button" class="type-pill" data-value="note">
+                        <i class="ph ph-note"></i> Nota
+                      </button>
+                      <button type="button" class="type-pill" data-value="proposal">
+                        <i class="ph ph-file-text"></i> Proposta
+                      </button>
+                    </div>
+                    <input type="hidden" name="action_type" id="action-type-hidden" value="call">
+                  </div>
+
+                  <div class="form-group">
+                    <label class="form-label">Vendedor</label>
+                    <select name="seller_id" id="history-seller-select" class="form-control" required>
+                      <option value="">Carregando...</option>
+                    </select>
+                  </div>
+
+                  <div class="form-group">
+                    <label class="form-label">Descrição</label>
+                    <textarea name="description" class="form-control" rows="4"
+                      placeholder="Descreva o que foi discutido, próximos passos..." required></textarea>
+                  </div>
+
+                  <button type="submit" class="btn btn-primary btn-block" id="btn-register-history">
+                    <i class="ph ph-paper-plane-tilt"></i> Registrar
+                  </button>
+                </form>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+    </div><!-- /content -->
+
+    <footer class="footer">
+      <div class="footer-brand"><i class="ph-fill ph-brain"></i> Athena CRM</div>
+      <span>Churn Management Suite — Desenvolvido pela <strong>O2 Data</strong></span>
+      <span>&copy; <span id="footer-year"></span></span>
+    </footer>
+  </div>
+</div>
+
+<script src="../assets/js/core/api.js"></script>
+<script src="../assets/js/core/state.js"></script>
+<script src="../assets/js/core/theme.js"></script>
+<script src="../assets/js/core/utils.js"></script>
+<script src="../assets/js/core/router.js"></script>
+<script src="../assets/js/core/auth.js"></script>
+<script src="../assets/js/components/toast.js"></script>
+<script src="../assets/js/components/modal.js"></script>
+<script src="../assets/js/components/sidebar.js"></script>
+<script src="../assets/js/components/header.js"></script>
+<script src="../assets/js/components/footer.js"></script>
+<script src="../assets/js/components/charts.js"></script>
+<script src="../assets/js/components/kanban.js"></script>
+<script src="../assets/js/components/card.js"></script>
+<script src="../assets/js/components/table.js"></script>
+<script src="../assets/js/components/search.js"></script>
+<script src="../assets/js/pages/client-detail.js"></script>
+<script src="../assets/js/app.js"></script>
+</body>
+</html>
